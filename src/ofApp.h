@@ -1,14 +1,18 @@
+//ofApp.h
 #pragma once
 
 #include "ofMain.h"
+#include "mediaClasses.h"
 
+	
 class ofApp : public ofBaseApp{
 
 	public:
+
 		void setup();
 		void update();
 		void draw();
-
+		
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -19,6 +23,26 @@ class ofApp : public ofBaseApp{
 		void mouseExited(int x, int y);
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
-		
+		void gotMessage(ofMessage msg);		
+
+		ofVideoPlayer 		fingerMovie;
+		bool                frameByframe;
+
+		ofDirectory dir;
+		vector<ofImage> images;
+		ofRectangle pause_rec;
+
+		int currentImage;
+
+		ofVideoGrabber vidGrabber;
+		ofPixels videoInverted;
+		ofTexture videoTexture;
+
+		int camWidth;
+		int camHeight;
+
+
+		mediaGrid grid = mediaGrid(4, 4, 20, 200);
+
 };
+
