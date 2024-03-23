@@ -25,22 +25,9 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);		
 
-		ofVideoPlayer 		fingerMovie;
-		bool                frameByframe;
 
 		ofDirectory dir;
 		vector<ofImage> images;
-		ofRectangle pause_rec;
-
-		int currentImage;
-
-		ofVideoGrabber vidGrabber;
-		ofPixels videoInverted;
-		ofTexture videoTexture;
-
-		int camWidth;
-		int camHeight;
-
 
 		mediaGrid grid = mediaGrid(4, 3, 30, 200);
 
