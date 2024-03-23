@@ -31,13 +31,18 @@ void ofApp::setup(){
 
 	// you can now iterate through the files and load them into the ofImage vector
 
-    for (int i = 0; i < std::min(static_cast<int>(dir.size()), 12); i++) {
+    for (int i = 0; i < std::min(static_cast<int>(dir.size()), 11); i++) {
         auto img = std::make_unique<mediaImage>(); // Use std::make_unique for safety and simplicity
         img->load(dir.getPath(i)); // Assuming dir.getPath(i) returns a std::string
 
         grid.addItem(std::move(img), i / 3, i % 3);
     }
 
+
+    auto vid = std::make_unique<mediaVideo>(); // Use std::make_unique for safety and simplicity
+    vid->load("movies/fingers.mp4"); // Assuming dir.getPath(i) returns a std::string
+
+    grid.addItem(std::move(vid), 3, 2);
 
 	// camWidth = 640;  // try to grab at this size.
 	// camHeight = 480;
@@ -72,7 +77,6 @@ void ofApp::update(){
 
     grid.update();
 
-	// fingerMovie.update();
 
 
 	// if(!frameByframe) vidGrabber.update();
@@ -97,7 +101,6 @@ void ofApp::draw(){
 
     grid.draw();
 
-	// fingerMovie.draw(20,500);
 
 
 	// if (dir.size() > 0){

@@ -57,6 +57,28 @@ public:
 };
 
 
+
+class mediaVideo : public mediaItem {
+    ofVideoPlayer item;
+
+    public: 
+    void load(const std::string& path) override {
+        item.load(path);
+        item.setLoopState(OF_LOOP_NORMAL);
+	    item.play();
+    }
+
+    void update() override {
+        item.update();
+    };
+
+    void draw( float size = 1.0) override {
+        auto box = get_bounding_box();
+        item.draw(box.left, box.top, start_w * display_size, start_h * display_size);
+    }
+
+};
+
 class mediaImage : public mediaItem {
     ofImage item;
 
