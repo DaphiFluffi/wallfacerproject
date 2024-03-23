@@ -42,7 +42,7 @@ class ofApp : public ofBaseApp{
 		int camHeight;
 
 
-		mediaGrid grid = mediaGrid(4, 4, 20, 200);
+		mediaGrid grid = mediaGrid(4, 3, 30, 200);
 
 };
 

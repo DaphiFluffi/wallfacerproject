@@ -35,7 +35,7 @@ void ofApp::setup(){
         auto img = std::make_unique<mediaImage>(); // Use std::make_unique for safety and simplicity
         img->load(dir.getPath(i)); // Assuming dir.getPath(i) returns a std::string
 
-        grid.addItem(std::move(img), i % 3, i / 3);
+        grid.addItem(std::move(img), i / 3, i % 3);
     }
 
 
@@ -70,7 +70,7 @@ void ofApp::setup(){
 void ofApp::update(){
 
 
-    // grid.update();
+    grid.update();
 
 	// fingerMovie.update();
 
@@ -182,12 +182,14 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-	if(!frameByframe){
-		int width = ofGetWidth();
-		float pct = (float)x / (float)width;
-		float speed = (2 * pct - 1) * 5.0f;
-		fingerMovie.setSpeed(speed);
-	}
+	// if(!frameByframe){
+	// 	int width = ofGetWidth();
+	// 	float pct = (float)x / (float)width;
+	// 	float speed = (2 * pct - 1) * 5.0f;
+	// 	fingerMovie.setSpeed(speed);
+	// }
+
+    grid.mouseMoved(x, y);
 }
 
 //--------------------------------------------------------------
@@ -225,7 +227,6 @@ void ofApp::mouseReleased(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseEntered(int x, int y){
-    grid.mouseEntered(x, y);
 }
 
 //--------------------------------------------------------------
