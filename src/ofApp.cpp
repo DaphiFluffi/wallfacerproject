@@ -1,4 +1,6 @@
-//ofApp.cpp
+//ofApp.h
+
+
 #include "ofApp.h"
 
 //--------------------------------------------------------------
@@ -40,8 +42,7 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
-    grid.update();
+    state_manager.update();
 
 }
 
@@ -51,7 +52,7 @@ void ofApp::draw(){
 
     ofSetColor(ofColor::white);
 
-    grid.draw();
+    state_manager.draw();
 
 
 
@@ -59,6 +60,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
+
 
 }
 
@@ -70,12 +72,13 @@ void ofApp::keyReleased(int key){
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
 
-    grid.mouseMoved(x, y);
+    state_manager.mouseMoved(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
 
+    state_manager.mouseDragged(x, y, button);
 }
 
 //--------------------------------------------------------------
@@ -86,6 +89,8 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    
+        state_manager.mouseReleased(x, y, button);   
 }
 
 //--------------------------------------------------------------

@@ -2,8 +2,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "mediaClasses.h"
-
+#include "stateManagement.h"
+#include "mediaGrid.h"
+#include "mediaItems.h"
 	
 class ofApp : public ofBaseApp{
 
@@ -30,6 +31,7 @@ class ofApp : public ofBaseApp{
 		vector<ofImage> images;
 
 		mediaGrid grid = mediaGrid(4, 3, 30, 200);
+		StateManager state_manager = StateManager(&grid);
 
 };
 
