@@ -1,0 +1,16 @@
+class ItemMenuState : public GridState {
+
+    private:
+    mediaItem* item = nullptr;
+    int steps;
+
+    public:
+    DraggingState(mediaGrid* gr, mediaItem* it) : 
+        GridState(gr), item(it) {
+            name = StateNames::DRAGGING;
+            steps = 0;
+        };
+
+    void mouseDragged(int x, int y, int button);
+    void mouseReleased(int x, int y, int button);
+};

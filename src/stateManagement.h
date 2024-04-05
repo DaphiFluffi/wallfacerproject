@@ -14,6 +14,7 @@ enum class StateNames {
     NONE,
     DRAGGING,
     BROWSING,
+    ITEM_MENU,
 };
 
 class State {
@@ -130,11 +131,12 @@ class DraggingState : public GridState {
 
 
 
+
 class StateManager {
     private:
 
     mediaGrid* grid = nullptr;
-    std::unique_ptr<GridState> state = nullptr;
+    std::unique_ptr<State> state = nullptr;
 
     public:
 
