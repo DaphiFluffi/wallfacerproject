@@ -1,9 +1,9 @@
-//ofApp.h
-#pragma once
+	//ofApp.h
+	#pragma once
 
-#include "ofMain.h"
-#include "stateManagement.h"
-#include "mediaGrid.h"
+	#include "ofMain.h"
+	#include "stateManagement.h"
+	#include "mediaGrid.h"
 #include "mediaItems.h"
 	
 class ofApp : public ofBaseApp{
@@ -33,5 +33,8 @@ class ofApp : public ofBaseApp{
 		mediaGrid grid = mediaGrid(4, 3, 30, 200);
 		StateManager state_manager = StateManager(&grid);
 
+		ofVideoGrabber vidGrabber;
+		int camWidth;
+		int camHeight;
 };
 

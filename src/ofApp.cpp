@@ -8,7 +8,32 @@ void ofApp::setup(){
 	ofBackground(255,255,255);
 	ofSetVerticalSync(true);
 
+    // setup camera grapper
 
+    camWidth = 640;  // try to grab at this size.
+	camHeight = 480;
+
+	//get back a list of devices.
+	vector<ofVideoDevice> devices = vidGrabber.listDevices();
+
+	for(size_t i = 0; i < devices.size(); i++){
+		if(devices[i].bAvailable){
+			//log the device
+			ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+		}else{
+			//log the device and note it as unavailable
+			ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable ";
+		}
+	}
+
+	vidGrabber.setDeviceID(0);
+	vidGrabber.setDesiredFrameRate(30);
+	vidGrabber.setup(camWidth, camHeight);
+	ofSetVerticalSync(true);
+
+
+
+    // fill with media
 	dir.listDir("images/of_logos/");
 	dir.allowExt("jpg");
 	dir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
@@ -24,7 +49,7 @@ void ofApp::setup(){
 
 	// you can now iterate through the files and load them into the ofImage vector
 
-    for (int i = 0; i < std::min(static_cast<int>(dir.size()), 11); i++) {
+    for (int i = 0; i < std::min(static_cast<int>(dir.size()), 10); i++) {
         auto img = std::make_unique<mediaImage>(); // Use std::make_unique for safety and simplicity
         img->load(dir.getPath(i)); // Assuming dir.getPath(i) returns a std::string
 
@@ -35,13 +60,17 @@ void ofApp::setup(){
     auto vid = std::make_unique<mediaVideo>(); // Use std::make_unique for safety and simplicity
     vid->load("movies/fingers.mp4"); // Assuming dir.getPath(i) returns a std::string
 
-    grid.addItem(std::move(vid), 3, 2);
+    grid.addItem(std::move(vid), 3, 1);
+
+    auto feed = std::make_unique<mediaVideoFeed>(vidGrabber, camWidth, camHeight);
+    grid.addItem(std::move(feed), 3, 2);
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    
+    vidGrabber.update();
     state_manager.update();
 
 }
