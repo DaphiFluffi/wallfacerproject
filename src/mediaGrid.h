@@ -78,22 +78,22 @@ public:
 
     }
 
-    unique_ptr<mediaItem>* get_item_by_cords(int x, int y){
+    mediaItem* get_item_by_cords(int x, int y){
 
         for (auto& row : grid) {
                 for (auto& item : row) {
-                    if (item && item->contains(x, y)) return &item;
+                    if (item && item->contains(x, y)) return item.get();
                 }    
         }
         return nullptr;
     }
 
-    vector<unique_ptr<mediaItem>*> get_items_by_cords(int x, int y){
-        vector<unique_ptr<mediaItem>*> items;
+    vector<mediaItem*> get_items_by_cords(int x, int y){
+        vector<mediaItem*> items;
 
        for (auto& row : grid) {
                 for (auto& item : row) {
-                    if (item && item->contains(x, y)) items.push_back(&item);
+                    if (item && item->contains(x, y)) items.push_back(item.get());
                 }    
         }
         return items;

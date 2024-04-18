@@ -44,16 +44,22 @@ public:
 
     };
 
-    ofRectangle get_bounding_box(){
+    ofRectangle get_bounding_box(float size){
 
         auto [center_x, center_y] = get_center();
 
-        float x = center_x - start_w * display_size / 2;
+        float x = center_x - start_w * size / 2;
 
-        float y = center_y - start_h * display_size / 2;  
+        float y = center_y - start_h * size / 2;  
 
-        return ofRectangle(x, y, start_w * display_size, start_h * display_size);
+        return ofRectangle(x, y, start_w * size, start_h * size);
 
+    }
+
+
+    ofRectangle get_bounding_box(){
+
+        return get_bounding_box(display_size);
     }
 
     // BoundingBox get_bounding_box(){

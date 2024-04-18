@@ -44,17 +44,17 @@ void DraggingState::mouseReleased(int x, int y, int button){
 
     if (button != 0) return;
 
-    auto [center_x, center_y] = (*item)->get_center();
+    auto [center_x, center_y] = item->get_center();
 
     auto matchedItems = grid->get_items_by_cords(center_x, center_y);
 
 
 
-    (*item)->drawingPriotity = 0;
-    (*item)->current_x = (*item)->start_x;
-    (*item)->current_y = (*item)->start_y;
+    item->drawingPriotity = 0;
+    item->current_x = item->start_x;
+    item->current_y = item->start_y;
 
-    unique_ptr<mediaItem>* other_item = nullptr;
+    mediaItem* other_item = nullptr;
     
     for (auto other : matchedItems){
         if (item != other){
@@ -73,16 +73,16 @@ void DraggingState::mouseReleased(int x, int y, int button){
 
         cout << "trying to swap" << endl;
 
-        std::swap((*item)->start_x, (*other_item)->start_x);
-        std::swap((*item)->start_y, (*other_item)->start_y);
-        (*item)->current_x = (*item)->start_x;
-        (*item)->current_y = (*item)->start_y;
-        (*other_item)->current_x = (*other_item)->start_x;
-        (*other_item)->current_y = (*other_item)->start_y;
+        std::swap(item->start_x, other_item->start_x);
+        std::swap(item->start_y, other_item->start_y);
+        item->current_x = item->start_x;
+        item->current_y = item->start_y;
+        other_item->current_x = other_item->start_x;
+        other_item->current_y = other_item->start_y;
 
 
 
-        std::swap((*item), (*other_item));
+        std::swap(item, other_item);
         return;
     } 
 
@@ -114,7 +114,7 @@ void BrowsingState::update() {
 
     if (getMouseSpeed() > displaySpeedCut) return;
 
-    auto item = grid->get_item_by_cords(mouseX, mouseY);
+    mediaItem* item = grid->get_item_by_cords(mouseX, mouseY);
 
     // adjust frame counts
     if (item){  // if already active_el
@@ -153,7 +153,7 @@ void BrowsingState::update() {
 
 
                 item->display_size = (item->display_size);
-            }else if (&item == active_el){
+            }else if (item.get() == active_el){
                 item->display_size = (grid->larger_size - 1) * (passed_frames / (float)n_frames_full) + 1;
 
             }else{
@@ -164,6 +164,17 @@ void BrowsingState::update() {
     }
 };
 
+unique_ptr<State> BrowsingState::move_to_new_state(){
+    cout << "called " << passed_frames << " " << n_frames_full << endl;
+    if(active_el && passed_frames == n_frames_full){
+
+        return nullptr;
+        cout << "we would do something now" << endl;;
+    }
+
+    return nullptr;
+
+}
 
 void DraggingState::mouseDragged(int x, int y, int button){
 
@@ -171,7 +182,7 @@ void DraggingState::mouseDragged(int x, int y, int button){
 
         int x_diff = x - start_x;
         int y_diff = y - start_y;
-        (*item)->current_x = (*item)->start_x + x_diff;
-        (*item)->current_y = (*item)->start_y +y_diff;
+        item->current_x = item->start_x + x_diff;
+        item->current_y = item->start_y +y_diff;
 
 };
