@@ -4,22 +4,9 @@
 #include <memory> 
 #include <tuple> 
 
-struct BoundingBox {
-    float left;
-    float top;
-    float right;
-    float bottom;
-    
-    BoundingBox(float l, float t, float r, float b) 
-        : left(l), top(t), right(r), bottom(b) {}
 
-    bool contains(float x, float y){
-        return x >= left && x <= right && y >= top && y <= bottom;
-    }
 
     
-
-};
 
 class mediaItem {
 
@@ -57,7 +44,7 @@ public:
 
     };
 
-    BoundingBox get_bounding_box(){
+    ofRectangle get_bounding_box(){
 
         auto [center_x, center_y] = get_center();
 
@@ -65,14 +52,25 @@ public:
 
         float y = center_y - start_h * display_size / 2;  
 
-        return BoundingBox(x, y, x + start_w * display_size, y + start_h * display_size);
+        return ofRectangle(x, y, start_w * display_size, start_h * display_size);
 
     }
 
+    // BoundingBox get_bounding_box(){
+
+    //     auto [center_x, center_y] = get_center();
+
+    //     float x = center_x - start_w * display_size / 2;
+
+    //     float y = center_y - start_h * display_size / 2;  
+
+    //     return BoundingBox(x, y, x + start_w * display_size, y + start_h * display_size);
+
+    // }
 
     bool contains(float x, float y){
         auto box = get_bounding_box();
-        return box.contains(x, y);
+        return box.inside(x, y);
     }
 
 
@@ -96,7 +94,7 @@ class mediaVideo : public mediaItem {
 
     void draw( float size = 1.0) override {
         auto box = get_bounding_box();
-        item.draw(box.left, box.top, start_w * display_size, start_h * display_size);
+        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
 
 };
@@ -112,8 +110,7 @@ public:
     void draw( float size = 1.0) override {
 
         auto box = get_bounding_box();
-        item.draw(box.left, box.top, start_w * display_size, start_h * display_size);
-
+        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
 
     void update() override {};
