@@ -11,7 +11,10 @@ void StateManager::mouseMoved(int x, int y){
 void StateManager::mouseDragged(int x, int y, int button){
 
     if (button != 0) return;
-    if (state->getName() != StateNames::DRAGGING ){
+
+    auto name = state->getName();
+
+    if (name == StateNames::BROWSING || name == StateNames::ITEM_MENU){
 
 
         auto item = grid->get_item_by_cords(x, y);    
@@ -26,24 +29,13 @@ void StateManager::mouseDragged(int x, int y, int button){
 }
 
 void StateManager::mouseReleased(int x, int y, int button){
-  
-        std::cout << "Mousereleased" << x << " " << y << " " << button  << std::endl; 
-
-        if (button != 0) return;
-
-        if (state->getName() == StateNames::DRAGGING){
-
-            state->mouseReleased(x, y, button);
-
-
-            state = make_unique<BrowsingState>(grid);
-        }
+    state->mouseReleased(x,y,button);
 };
 
 void DraggingState::mouseReleased(int x, int y, int button){
 
     if (button != 0) return;
-
+    finished = true;
     auto [center_x, center_y] = item->get_center();
 
     auto matchedItems = grid->get_items_by_cords(center_x, center_y);
@@ -83,18 +75,20 @@ void DraggingState::mouseReleased(int x, int y, int button){
 
 
         std::swap(item, other_item);
-        return;
     } 
 
     
-
 }
 
-void BrowsingState::mouseMoved(int x, int y){
-    // mouseX = x; mouseY = y;
+unique_ptr<State> DraggingState::move_to_new_state(){
+
+    if(finished)
+        return std::make_unique<BrowsingState>(grid);
+
+    return nullptr;
+};
 
 
-}
 
 void BrowsingState::update() {
     mouseX = ofGetMouseX();
@@ -165,11 +159,9 @@ void BrowsingState::update() {
 };
 
 unique_ptr<State> BrowsingState::move_to_new_state(){
-    cout << "called " << passed_frames << " " << n_frames_full << endl;
     if(active_el && passed_frames == n_frames_full){
 
-        return nullptr;
-        cout << "we would do something now" << endl;;
+        return std::make_unique<ItemMenuState>(grid, active_el);
     }
 
     return nullptr;
@@ -185,4 +177,19 @@ void DraggingState::mouseDragged(int x, int y, int button){
         item->current_x = item->start_x + x_diff;
         item->current_y = item->start_y +y_diff;
 
+};
+
+
+    
+
+unique_ptr<State> ItemMenuState::move_to_new_state(){
+    
+    if(move_to_full)
+        return std::make_unique<FullScreenMode>(item, grid);
+
+    if(!item->contains(ofGetMouseX(), ofGetMouseY()))
+        return std::make_unique<BrowsingState>(grid);
+
+
+    return nullptr;
 };

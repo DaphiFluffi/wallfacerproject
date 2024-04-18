@@ -17,6 +17,7 @@ public:
     int drawingPriotity = 0;
     
     virtual void draw( float display_size = 1.0) = 0;
+    virtual void draw(float x, float y, float w, float h) = 0;
 
     virtual void update() = 0;
 
@@ -103,6 +104,10 @@ class mediaVideo : public mediaItem {
         item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
 
+    void draw(float x, float y, float w, float h){
+        item.draw(x,y,w,h);
+    }
+
 };
 
 class mediaImage : public mediaItem {
@@ -118,7 +123,11 @@ public:
         auto box = get_bounding_box();
         item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
+    void draw(float x, float y, float w, float h){
+        item.draw(x,y,w,h);
+    }
 
     void update() override {};
+
 };
 
