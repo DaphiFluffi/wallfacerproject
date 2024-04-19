@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include <memory>
 #include <tuple>
+#include "cameraManager.h"
 
 class mediaItem
 {
@@ -121,10 +122,10 @@ class mediaVideoFeed : public mediaItem
 {
 
 private:
-    ofVideoGrabber &vidGrabber;
+    cameraManager &cam_manager;
 
 public:
-    mediaVideoFeed(ofVideoGrabber &grab, int camWidth, int camHeight) : vidGrabber(grab){};
+    mediaVideoFeed(cameraManager &grab) : cam_manager(grab){};
 
     void update(){};
 
@@ -133,11 +134,11 @@ public:
 
         auto box = get_bounding_box();
         ofSetHexColor(0xffffff);
-        vidGrabber.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+        cam_manager.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
     void draw(float x, float y, float w, float h)
     {
         ofSetHexColor(0xffffff);
-        vidGrabber.draw(x, y, w, h);
+        cam_manager.draw(x, y, w, h);
     }
 };
