@@ -1,17 +1,21 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxCvHaarFinder.h"
 
 class cameraManager
 {
 
     ofVideoGrabber vidGrabber;
     ofImage img;
-    // ofxCvHaarFinder finder;s
+    ofxCvHaarFinder finder;
     int camWidth, camHeight;
+    int detect_every_n;
+    int steps;
+    vector<ofRectangle> faces;
 
 public:
-    cameraManager(int width, int height) : camWidth(width), camHeight(height){};
+    cameraManager(int width, int height, int det_every_n = 10) : camWidth(width), camHeight(height), steps(0), detect_every_n(det_every_n){};
 
     void setup()
     {
@@ -38,22 +42,43 @@ public:
         vidGrabber.setup(camWidth, camHeight);
         ofSetVerticalSync(true);
 
-        // finder.setup("haarcascade_frontalface_default.xml");
-	    // finder.findHaarObjects(img);
+        finder.setup("haarcascade_frontalface_default.xml");
     };
 
     void update(){
         vidGrabber.update();
-        if(vidGrabber.isFrameNew()){};
+        if(steps % detect_every_n == 0){
+
+	    finder.findHaarObjects(vidGrabber.getPixels());
+
+        faces.clear();
+        for(unsigned int i = 0; i < finder.blobs.size(); i++) {
+		    faces.push_back(finder.blobs[i].boundingRect);
+        }
+
+
+        };
+        steps++;
     };
 
     void draw(float x, float y, float w, float h){
         vidGrabber.draw(x,y,w,h);
+        ofNoFill();
 
-    //     	ofNoFill();
-	// for(unsigned int i = 0; i < finder.blobs.size(); i++) {
-	// 	ofRectangle cur = finder.blobs[i].boundingRect;
-	// 	ofDrawRectangle(cur.x, cur.y, cur.width, cur.height);
-	// }
+        // this only has the original coordinates of the image
+
+        for (const auto &cur : faces)
+        {
+            float new_x = (cur.x/camWidth)*w + x;
+        float new_y = (cur.y/camHeight)*h + y;
+        float new_w = cur.width / camWidth * w;
+        float new_h = cur.height / camHeight * h;
+
+		ofDrawRectangle(new_x, new_y, new_w, new_h);
+        }
+
+        ofFill();
+   
+
     };
 };
