@@ -4,6 +4,7 @@
 #include <memory>
 #include <tuple>
 #include "cameraManager.h"
+#include "ioManager.h"
 
 class mediaItem
 {
@@ -65,17 +66,20 @@ public:
     }
 };
 
+
+
 class mediaVideo : public mediaItem
 {
     ofVideoPlayer item;
+    DataPoint<ofVideoPlayer>& datapoint;
 
 public:
-    void load(const std::string &path) override
-    {
-        item.load(path);
+    mediaVideo(DataPoint<ofVideoPlayer>& data) : datapoint(datapoint){
+
+        item = data.loadMedia();
         item.setLoopState(OF_LOOP_NORMAL);
         item.play();
-    }
+    };
 
     void update() override
     {
@@ -97,12 +101,13 @@ public:
 class mediaImage : public mediaItem
 {
     ofImage item;
+    DataPoint<ofImage>& datapoint;
 
 public:
-    void load(const std::string &path) override
-    {
-        item.load(path);
-    }
+    mediaImage(DataPoint<ofImage>& data) : datapoint(data){
+
+        item = data.loadMedia();
+    };
 
     void draw(float size = 1.0) override
     {

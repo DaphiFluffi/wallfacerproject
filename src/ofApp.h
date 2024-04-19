@@ -6,6 +6,7 @@
 #include "mediaGrid.h"
 #include "cameraManager.h"
 #include "mediaItems.h"
+#include "ioManager.h"
 
 class ofApp : public ofBaseApp
 {
@@ -27,8 +28,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
-	ofDirectory dir;
-	vector<ofImage> images;
+	ioManager<ofImage> image_io_manager = ioManager<ofImage>("images", { "jpg", "png" });
+	ioManager<ofVideoPlayer> video_io_manager = ioManager<ofVideoPlayer>("videos", { "mp4",});
 
 	mediaGrid grid = mediaGrid(4, 3, 30, 200);
 	StateManager state_manager = StateManager(&grid);

@@ -8,36 +8,18 @@ void ofApp::setup()
     ofBackground(255, 255, 255);
 
     cam_manager.setup();
+    image_io_manager.setup();
+    video_io_manager.setup();
 
-    // fill with media
-    dir.listDir("images/of_logos/");
-    dir.allowExt("jpg");
-    dir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
-
-    // allocate the vector to have as many ofImages as files
-    if (dir.size())
+    // fill grid 
+    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 10); i++)
     {
-        images.assign(dir.size(), ofImage());
-    }
-
-    std::cout << "\n---------------------------------------------\nimages " << dir.size() << endl
-              << dir.path() << endl;
-    ;
-
-    // grid = mediaGrid(3, 4, 20, 200);
-
-    // you can now iterate through the files and load them into the ofImage vector
-
-    for (int i = 0; i < std::min(static_cast<int>(dir.size()), 10); i++)
-    {
-        auto img = std::make_unique<mediaImage>(); // Use std::make_unique for safety and simplicity
-        img->load(dir.getPath(i));                 // Assuming dir.getPath(i) returns a std::string
+        auto img = std::make_unique<mediaImage>(image_io_manager.getData(i)); 
 
         grid.addItem(std::move(img), i / 3, i % 3);
     }
 
-    auto vid = std::make_unique<mediaVideo>(); // Use std::make_unique for safety and simplicity
-    vid->load("movies/fingers.mp4");           // Assuming dir.getPath(i) returns a std::string
+    auto vid = std::make_unique<mediaVideo>(video_io_manager.getData(0)); 
 
     grid.addItem(std::move(vid), 3, 1);
 
