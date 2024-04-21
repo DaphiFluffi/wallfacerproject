@@ -1,9 +1,21 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include <map>
+#include <string>
 
 //========================================================================
-int main( ){
+int main(int argc, char *argv[]) {
 
+    // Map to hold command line arguments
+    std::map<std::string, bool> cmdArgs;
+
+    // Parse command line arguments
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--gmd") {
+            cmdArgs[arg] = true;
+        }
+    }
 	//Use ofGLFWWindowSettings for more options like multi-monitor fullscreen
 	ofGLWindowSettings settings;
 	settings.setSize(1024, 768);
@@ -11,7 +23,11 @@ int main( ){
 
 	auto window = ofCreateWindow(settings);
 
-	ofRunApp(window, make_shared<ofApp>());
+	auto app = make_shared<ofApp>();
+
+	app->cmdArgs = cmdArgs;
+	
+	ofRunApp(window, app);
 	ofRunMainLoop();
 
 }

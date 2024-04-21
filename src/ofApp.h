@@ -35,4 +35,7 @@ public:
 	StateManager state_manager = StateManager(&grid);
 
 	cameraManager cam_manager = cameraManager(640, 480);
+
+
+	std::map<std::string, bool> cmdArgs;
 };

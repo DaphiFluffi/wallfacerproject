@@ -25,6 +25,14 @@ void ofApp::setup()
 
     auto feed = std::make_unique<mediaVideoFeed>(cam_manager);
     grid.addItem(std::move(feed), 3, 2);
+
+    if (cmdArgs.find("--gmd") != cmdArgs.end())
+    {
+        std::cout << "Generating metadata" << std::endl;
+
+        image_io_manager.updateMetadata();
+        video_io_manager.updateMetadata();
+    }
 }
 
 //--------------------------------------------------------------
