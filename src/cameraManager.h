@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxCvHaarFinder.h"
+#include "ofxOpenCv.h"
 
 class cameraManager
 {
@@ -12,10 +13,22 @@ class cameraManager
     int camWidth, camHeight;
     int detect_every_n;
     int steps;
+    int thresh; 
     vector<ofRectangle> faces;
 
+
+    ofxCvColorImage		colorImg;
+    ofxCvGrayscaleImage grayImage;
+    ofxCvContourFinder 	contourFinder;
+
 public:
-    cameraManager(int width, int height, int det_every_n = 10) : camWidth(width), camHeight(height), steps(0), detect_every_n(det_every_n){};
+    ofxCvGrayscaleImage grayBg;
+    ofxCvGrayscaleImage grayDiff;
+
+
+    cameraManager(int width, int height, int det_every_n = 10, int threshold = 80) 
+        : camWidth(width), camHeight(height), steps(0), 
+        detect_every_n(det_every_n), thresh(threshold){};
 
     void setup()
     {
@@ -43,22 +56,45 @@ public:
         ofSetVerticalSync(true);
 
         finder.setup("haarcascade_frontalface_default.xml");
+
+        colorImg.allocate(camWidth, camHeight);
+        grayImage.allocate(camWidth, camHeight);
+        grayBg.allocate(camWidth, camHeight);
+        grayDiff.allocate(camWidth, camHeight);
+
+        colorImg.setFromPixels(vidGrabber.getPixels());
+        vidGrabber.update();
+        grayImage = colorImg;
+        grayBg = grayImage;
     };
+
 
     void update(){
         vidGrabber.update();
+        ofPixels& pixels = vidGrabber.getPixels();
+
         if(steps % detect_every_n == 0){
 
-	    finder.findHaarObjects(vidGrabber.getPixels());
-
-        faces.clear();
-        for(unsigned int i = 0; i < finder.blobs.size(); i++) {
-		    faces.push_back(finder.blobs[i].boundingRect);
-        }
+            finder.findHaarObjects(pixels);
 
 
+            faces.clear();
+            for(unsigned int i = 0; i < finder.blobs.size(); i++) {
+                faces.push_back(finder.blobs[i].boundingRect);
+            }
         };
+        
+        colorImg.setFromPixels(pixels);
+        
+        grayImage = colorImg;
+        grayDiff.absDiff(grayBg, grayImage);
+        grayDiff.threshold(80);
+        
+        
         steps++;
+
+
+
     };
 
     void draw(float x, float y, float w, float h){
@@ -79,6 +115,16 @@ public:
 
         ofFill();
    
+
+    };
+
+
+    void keyPressed(int key){
+
+        if(key == ' '){
+            grayBg = grayImage;
+            std::cout << "Updated Background\n";
+        };
 
     };
 };

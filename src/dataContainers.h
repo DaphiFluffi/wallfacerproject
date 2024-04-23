@@ -27,6 +27,8 @@ struct Metadata {
 
     void save(const std::string& filepath);
 
+    void draw(float x, float y, float w, float h);
+
     
 };
 
@@ -43,6 +45,7 @@ struct DataPoint {
         media.load(filePath); 
         return media;
     }
+
 
     ofxCvColorImage getOFCVImage();
 };

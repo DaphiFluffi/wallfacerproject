@@ -154,6 +154,14 @@ void Metadata::save(const std::string &filepath)
     write_settings.save(filepath);
 }
 
+
+void  Metadata::draw(float x, float y, float w, float h){
+
+
+
+};
+
+
 template <>
 ofxCvColorImage DataPoint<ofImage>::getOFCVImage()
 {

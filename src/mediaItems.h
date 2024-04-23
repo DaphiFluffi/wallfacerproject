@@ -15,6 +15,7 @@ public:
 
     virtual void draw(float display_size = 1.0) = 0;
     virtual void draw(float x, float y, float w, float h) = 0;
+    virtual void drawMetadata(float x, float y, float w, float h) {};
 
     virtual void update() = 0;
 
@@ -64,6 +65,12 @@ public:
         auto box = get_bounding_box();
         return box.inside(x, y);
     }
+
+    void drawMetadata(float x, float y, float w, float h) {
+
+        datapoint.metadata.draw(x, y, w, h);
+    };
+
 };
 
 
@@ -96,6 +103,11 @@ public:
     {
         item.draw(x, y, w, h);
     }
+    
+    void drawMetadata(float x, float y, float w, float h) {
+
+        datapoint.metadata.draw(x, y, w, h);
+    };
 };
 
 class mediaImage : public mediaItem
@@ -123,14 +135,15 @@ public:
     void update() override{};
 };
 
-class mediaVideoFeed : public mediaItem
+template <typename ofType>
+class mediaFeed : public mediaItem
 {
 
 private:
-    cameraManager &cam_manager;
+    ofType &item;
 
 public:
-    mediaVideoFeed(cameraManager &grab) : cam_manager(grab){};
+    mediaFeed(ofType &grab) : item(grab){};
 
     void update(){};
 
@@ -139,11 +152,11 @@ public:
 
         auto box = get_bounding_box();
         ofSetHexColor(0xffffff);
-        cam_manager.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
     void draw(float x, float y, float w, float h)
     {
         ofSetHexColor(0xffffff);
-        cam_manager.draw(x, y, w, h);
+        item.draw(x, y, w, h);
     }
 };

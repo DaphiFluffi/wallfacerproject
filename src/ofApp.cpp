@@ -12,7 +12,7 @@ void ofApp::setup()
     video_io_manager.setup();
 
     // fill grid 
-    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 10); i++)
+    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 14); i++)
     {
         auto img = std::make_unique<mediaImage>(image_io_manager.getData(i)); 
 
@@ -20,11 +20,19 @@ void ofApp::setup()
     }
 
     auto vid = std::make_unique<mediaVideo>(video_io_manager.getData(0)); 
+    grid.addItem(std::move(vid), 4, 2);
 
-    grid.addItem(std::move(vid), 3, 1);
 
-    auto feed = std::make_unique<mediaVideoFeed>(cam_manager);
-    grid.addItem(std::move(feed), 3, 2);
+
+    auto feed = std::make_unique<mediaFeed<cameraManager>>(cam_manager);
+    grid.addItem(std::move(feed), 5, 0);
+    
+
+    auto background_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayBg);
+    grid.addItem(std::move(background_feed), 5, 1);
+
+    auto diff_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayDiff);
+    grid.addItem(std::move(diff_feed), 5, 2);
 
     if (cmdArgs.find("--gmd") != cmdArgs.end())
     {
@@ -55,6 +63,7 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
 {
+    cam_manager.keyPressed(key);
 }
 
 //--------------------------------------------------------------

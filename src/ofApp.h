@@ -31,7 +31,7 @@ public:
 	ioManager<ofImage> image_io_manager = ioManager<ofImage>("images", { "jpg", "png" });
 	ioManager<ofVideoPlayer> video_io_manager = ioManager<ofVideoPlayer>("videos", { "mp4",});
 
-	mediaGrid grid = mediaGrid(4, 3, 30, 200);
+	mediaGrid grid = mediaGrid(6, 3, 40, 270);
 	StateManager state_manager = StateManager(&grid);
 
 	cameraManager cam_manager = cameraManager(640, 480);
