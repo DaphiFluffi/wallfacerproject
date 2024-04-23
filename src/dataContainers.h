@@ -11,14 +11,16 @@
 struct Metadata {
     std::optional<std::string> description = std::nullopt;
     std::optional<float> brightness = std::nullopt;;
-    std::optional<float> color = std::nullopt;
+    std::optional<vector<float>> redHist = std::nullopt;
+    std::optional<vector<float>> greenHist = std::nullopt;
+    std::optional<vector<float>> blueHist = std::nullopt;
     ofxXmlSettings settings;
 
 
     std::optional<int> getOptionalIntValue(const std::string& tag, int which = 0);
     std::optional<double> getOptionalDoubleValue(const std::string& tag, int which = 0);
-
     std::optional<std::string> getOptionalStringValue(const std::string& tag, int which = 0);
+    std::optional<vector<float>> getOptionalDoubleVecValue(const std::string &tag, int size);
 
     Metadata() = default;
     Metadata(const std::string& filepath);

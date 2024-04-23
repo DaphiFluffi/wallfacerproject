@@ -3,6 +3,8 @@
 #include "dataContainers.h"
 #include <opencv2/opencv.hpp>  
 #include <opencv2/imgproc/imgproc.hpp>
+#include <vector>
+#include <tuple>
 
 class metadataGenerator {
 public:
@@ -17,6 +19,8 @@ private:
     
     float calculateBrightness(const cv::Mat& image);
     
+    std::tuple<std::vector<float>, std::vector<float>, std::vector<float>> computeColorHistogram(const cv::Mat& image);
+
 };
 
 
@@ -35,6 +39,14 @@ void metadataGenerator::updateMetadata(DataPoint<MediaType>& dataPoint) {
     dataPoint.metadata.brightness = calculateBrightness(grayMat);
     std::cout << "computed brightness " << dataPoint.metadata.brightness.value() << std::endl;
     
+
+    auto [redHist, greenHist, blueHist] = computeColorHistogram(colorMat);
+
+    dataPoint.metadata.redHist = redHist;
+    dataPoint.metadata.blueHist = blueHist;
+    dataPoint.metadata.greenHist = greenHist;
+
+
     // save changes
     dataPoint.metadata.save(dataPoint.metadataPath);
 }
