@@ -191,23 +191,20 @@ public:
         int screenWidth = ofGetWindowWidth();
         int screenHeight = ofGetWindowHeight();
 
-        // Calculate the aspect ratio of the mediaItem
         float aspectRatio = static_cast<float>(item->start_w) / static_cast<float>(item->start_h);
 
-        // Determine the size to draw the mediaItem
         float drawWidth, drawHeight;
         if (aspectRatio > 1)
-        { // Width is greater than height
+        { 
             drawWidth = screenHeight * aspectRatio;
             drawHeight = screenHeight;
         }
         else
-        { // Height is greater than or equal to width
+        { 
             drawWidth = screenWidth;
             drawHeight = screenWidth / aspectRatio;
         }
 
-        // Ensure that the mediaItem does not exceed the screen size
         if (drawWidth > screenWidth)
         {
             drawWidth = screenWidth;
@@ -225,6 +222,14 @@ public:
 
         // Draw the mediaItem at the calculated position and size
         item->draw(drawX, drawY, drawWidth, drawHeight);
+
+        float meta_x = drawX + drawWidth + 30;
+        float meta_w = screenWidth - meta_x - 30;
+        float meta_y = 150;
+        float meta_h = screenHeight - 2 * meta_y;
+
+        item->drawMetadata(meta_x, meta_y, meta_w, meta_h);
+
     };
 
     void mousePressed(int x, int y, int button)

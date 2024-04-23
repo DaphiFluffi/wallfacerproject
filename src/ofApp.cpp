@@ -11,6 +11,11 @@ void ofApp::setup()
     image_io_manager.setup();
     video_io_manager.setup();
 
+
+    fontManager& font_manager = fontManager::getInstance();
+
+    font_manager.setup(12, 20);
+
     // fill grid 
     for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 14); i++)
     {

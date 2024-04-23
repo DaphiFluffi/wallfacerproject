@@ -66,10 +66,6 @@ public:
         return box.inside(x, y);
     }
 
-    void drawMetadata(float x, float y, float w, float h) {
-
-        datapoint.metadata.draw(x, y, w, h);
-    };
 
 };
 
@@ -81,7 +77,7 @@ class mediaVideo : public mediaItem
     DataPoint<ofVideoPlayer>& datapoint;
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data) : datapoint(datapoint){
+    mediaVideo(DataPoint<ofVideoPlayer>& data) : datapoint(data){
 
         item = data.loadMedia();
         item.setLoopState(OF_LOOP_NORMAL);
@@ -104,7 +100,7 @@ public:
         item.draw(x, y, w, h);
     }
     
-    void drawMetadata(float x, float y, float w, float h) {
+    void drawMetadata(float x, float y, float w, float h) override {
 
         datapoint.metadata.draw(x, y, w, h);
     };
@@ -133,6 +129,12 @@ public:
     }
 
     void update() override{};
+
+
+    void drawMetadata(float x, float y, float w, float h) override {
+
+        datapoint.metadata.draw(x, y, w, h);
+    };
 };
 
 template <typename ofType>

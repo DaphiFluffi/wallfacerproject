@@ -6,6 +6,7 @@
 #include "mediaGrid.h"
 #include "cameraManager.h"
 #include "mediaItems.h"
+#include "fontManager.h"
 #include "ioManager.h"
 
 class ofApp : public ofBaseApp
