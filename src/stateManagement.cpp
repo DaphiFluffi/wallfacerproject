@@ -182,14 +182,37 @@ void DraggingState::mouseDragged(int x, int y, int button){
 
     
 
+void ItemMenuState::mousePressed(int x, int y, int button)
+{
+
+    auto type = get_button_type(x, y);
+
+    if (type.has_value())
+    {
+        switch (type.value())
+        {
+        case ButtonType::FULLSCREEN:
+            new_state = std::make_unique<FullScreenMode>(item, grid);
+            
+            break;
+        case ButtonType::PAUSE_RESUME:
+            item->togglePause();
+            break;
+        }
+    }
+
+
+
+
+};
+
 unique_ptr<State> ItemMenuState::move_to_new_state(){
     
-    if(move_to_full)
-        return std::make_unique<FullScreenMode>(item, grid);
+    if(new_state)
+        return std::move(new_state);
 
     if(!item->contains(ofGetMouseX(), ofGetMouseY()))
         return std::make_unique<BrowsingState>(grid);
-
 
     return nullptr;
 };

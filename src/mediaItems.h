@@ -6,20 +6,35 @@
 #include "cameraManager.h"
 #include "ioManager.h"
 
+
+
+enum class MediaType
+{
+    IMAGE,
+    VIDEO,
+    FEED
+};  
+
+
 class mediaItem
 {
 
 private:
 public:
     int drawingPriotity = 0;
+    MediaType type;
 
     virtual void draw(float display_size = 1.0) = 0;
     virtual void draw(float x, float y, float w, float h) = 0;
     virtual void drawMetadata(float x, float y, float w, float h) {};
 
     virtual void update() = 0;
-
+    virtual void togglePause(){};
+    
     virtual void load(const std::string &path){};
+
+
+    mediaItem(MediaType type) : type(type){};
 
     virtual ~mediaItem() = default;
 
@@ -75,18 +90,38 @@ class mediaVideo : public mediaItem
 {
     ofVideoPlayer item;
     DataPoint<ofVideoPlayer>& datapoint;
+    bool active = true;
+
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data) : datapoint(data){
+    mediaVideo(DataPoint<ofVideoPlayer>& data) : mediaItem(MediaType::VIDEO), datapoint(data){
 
         item = data.loadMedia();
         item.setLoopState(OF_LOOP_NORMAL);
         item.play();
+
+
+
     };
+
+    void togglePause(){
+        active = !active;
+    }
+
+    void stop()
+    {
+        active = false;
+    }
+
+    void play()
+    {
+        active = true;
+    }
 
     void update() override
     {
-        item.update();
+        if (active)
+            item.update();
     };
 
     void draw(float size = 1.0) override
@@ -112,7 +147,7 @@ class mediaImage : public mediaItem
     DataPoint<ofImage>& datapoint;
 
 public:
-    mediaImage(DataPoint<ofImage>& data) : datapoint(data){
+    mediaImage(DataPoint<ofImage>& data) : mediaItem(MediaType::IMAGE), datapoint(data){
 
         item = data.loadMedia();
     };
@@ -145,7 +180,7 @@ private:
     ofType &item;
 
 public:
-    mediaFeed(ofType &grab) : item(grab){};
+    mediaFeed(ofType &grab) : mediaItem(MediaType::FEED), item(grab){};
 
     void update(){};
 

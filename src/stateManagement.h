@@ -8,6 +8,7 @@
 #include <deque>
 #include <numeric>
 #include <math.h>
+#include <optional>
 
 enum class StateNames
 {
@@ -119,68 +120,175 @@ public:
     virtual unique_ptr<State> move_to_new_state();
 };
 
-class ItemMenuState : public GridState
+
+enum class ButtonType {
+    FULLSCREEN,
+    PAUSE_RESUME,
+};
+
+
+struct Button {
+
+    float center_x, center_y;
+    float full_width;
+    float display_percentage;
+    ofColor color = ofColor(0, 255, 0);
+    ButtonType type;
+
+    Button(float x, float y, float w, ofColor c, ButtonType tp, float dper =1.0f) : center_x(x), center_y(y),
+     full_width(w), color(c), type(tp), display_percentage(dper) {};
+
+    ofRectangle get_rect()
+    {
+        float width = full_width * display_percentage;
+        return ofRectangle(center_x - width / 2, center_y - width / 2, width, width);
+    }
+
+    bool is_inside(float x, float y)
+    {
+        return get_rect().inside(x, y);
+    }
+
+    void draw()
+    {
+        ofSetColor(color);
+        ofDrawRectangle(get_rect());
+    }
+
+
+};
+
+
+class ButtonManagerState : public GridState {
+protected:
+    std::vector<Button> buttons;
+
+public:
+    ButtonManagerState(mediaGrid *gr) : GridState(gr) {}
+
+    virtual void drawButtons() {
+        for (auto &button : buttons) {
+            button.draw();
+        }
+    }
+
+    virtual std::optional<ButtonType> get_button_type(int x, int y) {
+        for (auto &button : buttons) {
+            if (button.is_inside(x, y))
+                return button.type;
+        }
+        return std::nullopt;
+    }
+
+    void possitionButtons(float center_x,float center_y, float radius){
+
+        if (buttons.size() ==0){
+            return;
+        }
+        else if(buttons.size() ==1){
+            buttons[0].center_x = center_x;
+            buttons[0].center_y = center_y;
+
+        } 
+            // in circle
+            else 
+        {
+            float angle_increment = 360.0f / buttons.size();
+
+            for (int i = 0; i < buttons.size(); i++)
+            {
+                float angle = angle_increment * i;
+                float rad = angle * DEG_TO_RAD; 
+                float x = center_x + radius * cos(rad);
+                float y = center_y + radius * sin(rad);
+
+                
+                buttons[i].center_x = x;
+                buttons[i].center_y = y;
+            };
+        };
+    };
+
+};
+
+
+class ItemMenuState : public ButtonManagerState
 {
 
 private:
     mediaItem *item = nullptr;
     int steps;
-    float max_percentage = 0.2;
+    float max_percentage = 0.15;
     float full_steps = 10;
-    bool move_to_full = false;
+
+    std::unique_ptr<State> new_state = nullptr;
 
 public:
-    ItemMenuState(mediaGrid *gr, mediaItem *it) : GridState(gr), item(it)
+    ItemMenuState(mediaGrid *gr, mediaItem *it) : ButtonManagerState(gr), item(it)
     {
         name = StateNames::ITEM_MENU;
         steps = 0;
+
+        float item_width = item->display_size * item->start_w;
+
+        buttons.push_back(Button(0, 0, max_percentage * item_width, ofColor(0, 255, 0), ButtonType::FULLSCREEN, 0.0f));
+
+        if (item->type == MediaType::VIDEO)
+        {
+            buttons.push_back(Button(0, 0, max_percentage * item_width, ofColor(0, 0, 255), ButtonType::PAUSE_RESUME, 0.0f));
+        }
+
+        auto [center_x, center_y] = item->get_center();
+
+        possitionButtons(center_x, center_y, item_width * 0.2);
+
     };
+
 
     virtual void update()
     {
         steps++;
+
+        for (auto &button : buttons)
+        {
+            button.display_percentage = std::min(steps / full_steps, 1.0f);
+        }
+
         GridState::update();
     }
 
-    ofRectangle get_menu_rect()
-    {
-        float size = std::min(steps / full_steps, 1.0f) * max_percentage;
-
-        return item->get_bounding_box(size);
-    };
-
-    virtual void mousePressed(int x, int y, int button)
-    {
-        if (button == 0 && get_menu_rect().inside(x, y))
-
-            move_to_full = true;
-    }
+    virtual void mousePressed(int x, int y, int button);
 
     virtual void draw()
     {
         GridState::update();
 
         grid->draw();
-        ofSetColor(0);
-        ofDrawRectangle(get_menu_rect());
+        
+        drawButtons();
     }
 
     virtual unique_ptr<State> move_to_new_state();
 };
 
-class FullScreenMode : public State
+class FullScreenMode : public ButtonManagerState
 {
 
 private:
     mediaItem *item = nullptr;
     bool back_to_browsing = false;
 
-    mediaGrid *grid = nullptr;
 
 public:
-    FullScreenMode(mediaItem *pointer, mediaGrid *gr) : item(pointer), grid(gr)
+    FullScreenMode(mediaItem *pointer, mediaGrid *gr) : ButtonManagerState(gr),item(pointer)
     {
         name = StateNames::FULL_SCREEN;
+
+        if (item->type == MediaType::VIDEO)
+        {
+            buttons.push_back(Button(0, 0, 60, ofColor(0, 0, 255), ButtonType::PAUSE_RESUME, 1));
+        }
+
     };
     virtual void update()
     {
@@ -230,10 +338,31 @@ public:
 
         item->drawMetadata(meta_x, meta_y, meta_w, meta_h);
 
+
+        possitionButtons(drawX / 2, screenHeight / 2, 100);
+        drawButtons();
+
+
     };
 
     void mousePressed(int x, int y, int button)
     {
+
+        auto button_type = get_button_type(x, y);
+
+        if (button_type)
+        {
+            switch (button_type.value())
+            {
+            case ButtonType::PAUSE_RESUME:
+                item->togglePause();
+                return;
+            
+            default:
+                break;
+            }
+        }
+
         back_to_browsing = true;
     }
 
