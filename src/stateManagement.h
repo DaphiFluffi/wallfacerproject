@@ -2,10 +2,11 @@
 
 #include "ofMain.h"
 #include "mediaGrid.h"
+#include "higherItems.h"
 #include <vector>
+#include <deque>
 #include <memory>
 #include <tuple>
-#include <deque>
 #include <numeric>
 #include <math.h>
 #include <optional>

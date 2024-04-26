@@ -17,12 +17,16 @@ void ofApp::setup()
     font_manager.setup(12, 20);
 
     // fill grid 
-    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 14); i++)
+    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 13); i++)
     {
         auto img = std::make_unique<mediaImage>(image_io_manager.getData(i)); 
 
         grid.addItem(std::move(img), i / 3, i % 3);
     }
+
+    auto a_collector = std::make_unique<collectorItem>();
+    grid.addItem(std::move(a_collector), 4, 1);
+
 
     auto vid = std::make_unique<mediaVideo>(video_io_manager.getData(0)); 
     grid.addItem(std::move(vid), 4, 2);

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "ofMain.h"
 #include <memory>
 #include <tuple>
@@ -12,7 +13,9 @@ enum class MediaType
 {
     IMAGE,
     VIDEO,
-    FEED
+    FEED,
+    EMPTY,
+    COLLECTOR,
 };  
 
 
@@ -34,7 +37,7 @@ public:
     virtual void load(const std::string &path){};
 
 
-    mediaItem(MediaType type) : type(type){};
+    explicit mediaItem(MediaType type) : type(type){};
 
     virtual ~mediaItem() = default;
 
@@ -51,13 +54,13 @@ public:
         this->display_size = display_size;
     };
 
-    std::tuple<float, float> get_center()
+    std::tuple<float, float> get_center() const
     {
 
         return {current_x + start_w / 2, current_y + start_h / 2};
     };
 
-    ofRectangle get_bounding_box(float size)
+    ofRectangle get_bounding_box(const float size) const
     {
 
         auto [center_x, center_y] = get_center();
@@ -69,15 +72,15 @@ public:
         return ofRectangle(x, y, start_w * size, start_h * size);
     }
 
-    ofRectangle get_bounding_box()
+    ofRectangle get_bounding_box() const
     {
 
         return get_bounding_box(display_size);
     }
 
-    bool contains(float x, float y)
+    bool contains(const float x,const  float y) const
     {
-        auto box = get_bounding_box();
+        const auto box = get_bounding_box();
         return box.inside(x, y);
     }
 
@@ -86,114 +89,29 @@ public:
 
 
 
-class mediaVideo : public mediaItem
-{
-    ofVideoPlayer item;
-    DataPoint<ofVideoPlayer>& datapoint;
-    bool active = true;
 
+class emptyItem : public mediaItem
+{
+private:
+    ofColor color = ofColor(200);
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data) : mediaItem(MediaType::VIDEO), datapoint(data){
-
-        item = data.loadMedia();
-        item.setLoopState(OF_LOOP_NORMAL);
-        item.play();
-
-
-
-    };
-
-    void togglePause(){
-        active = !active;
-    }
-
-    void stop()
-    {
-        active = false;
-    }
-
-    void play()
-    {
-        active = true;
-    }
-
-    void update() override
-    {
-        if (active)
-            item.update();
-    };
-
-    void draw(float size = 1.0) override
-    {
-        auto box = get_bounding_box();
-        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
-    }
-
-    void draw(float x, float y, float w, float h)
-    {
-        item.draw(x, y, w, h);
-    }
-    
-    void drawMetadata(float x, float y, float w, float h) override {
-
-        datapoint.metadata.draw(x, y, w, h);
-    };
-};
-
-class mediaImage : public mediaItem
-{
-    ofImage item;
-    DataPoint<ofImage>& datapoint;
-
-public:
-    mediaImage(DataPoint<ofImage>& data) : mediaItem(MediaType::IMAGE), datapoint(data){
-
-        item = data.loadMedia();
-    };
-
-    void draw(float size = 1.0) override
-    {
-
-        auto box = get_bounding_box();
-        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
-    }
-    void draw(float x, float y, float w, float h)
-    {
-        item.draw(x, y, w, h);
-    }
+    emptyItem() : mediaItem(MediaType::EMPTY){};
 
     void update() override{};
 
-
-    void drawMetadata(float x, float y, float w, float h) override {
-
-        datapoint.metadata.draw(x, y, w, h);
-    };
-};
-
-template <typename ofType>
-class mediaFeed : public mediaItem
-{
-
-private:
-    ofType &item;
-
-public:
-    mediaFeed(ofType &grab) : mediaItem(MediaType::FEED), item(grab){};
-
-    void update(){};
-
     void draw(float size = 1.0) override
     {
 
-        auto box = get_bounding_box();
-        ofSetHexColor(0xffffff);
-        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+        const auto box = get_bounding_box();
+        ofSetColor(color);
+        ofDrawRectangle(box);
+
     }
-    void draw(float x, float y, float w, float h)
+    void draw(const float x,const  float y,const  float w,const  float h) override
     {
-        ofSetHexColor(0xffffff);
-        item.draw(x, y, w, h);
+        ofSetColor(color);
+        ofDrawRectangle(x,y,w,h);
     }
 };
+

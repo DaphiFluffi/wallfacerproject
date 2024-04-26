@@ -59,6 +59,35 @@ void DraggingState::mouseReleased(int x, int y, int button){
     } else if (!other_item) {
         std::cout << "only found highlighted" << endl;
 
+        return;
+
+
+    }
+
+    std::cout << "other item type id " << static_cast<int>(other_item->type) << endl;
+
+        // if collector move and put in collector
+    if (other_item->type == MediaType::COLLECTOR){
+
+        std::cout << "collector swap try" << endl;
+
+        collectorItem* collector = dynamic_cast<collectorItem*>(other_item);
+        if (!collector){
+            cerr << "Could not cast to collector" << endl;
+            return;
+        }
+
+        auto [x,y] = grid->get_cords_by_item(item);
+        if (x<0 || y< 0) {
+            std::cerr << "Somehow negative coords" << std::endl;
+            return;
+        }
+
+        auto selected_item = grid->pop_item(x, y);
+
+        if (!selected_item) {std::cerr << "could not pop item" << std::endl; return;}
+        collector->add_item(std::move(selected_item));
+
     } else {
 
 
@@ -132,26 +161,26 @@ void BrowsingState::update() {
 
     //adjust sizes of blocks
     for (auto& row : grid->grid) {
-        for (auto& item : row) {
+        for (auto& it : row) {
             
             // revert back to normal size
             if (!active_el){
 
-                if (item-> display_size > 1) {
-                    item->display_size = (grid->larger_size - 1) * (1- (passed_frames / (float)n_frames_full)) + 1;
+                if (it-> display_size > 1) {
+                    it->display_size = (grid->larger_size - 1) * (1- (passed_frames / static_cast<float>(n_frames_full))) + 1;
                 }
 
-                if (item-> display_size < 1) {
-                    item->display_size = (grid->smaller_size - 1) * (1- (passed_frames / (float)n_frames_full)) + 1;
+                if (it-> display_size < 1) {
+                    it->display_size = (grid->smaller_size - 1) * (1- (passed_frames / static_cast<float>(n_frames_full))) + 1;
                 }
 
 
-                item->display_size = (item->display_size);
-            }else if (item.get() == active_el){
-                item->display_size = (grid->larger_size - 1) * (passed_frames / (float)n_frames_full) + 1;
+                it->display_size = (it->display_size);
+            }else if (it.get() == active_el){
+                it->display_size = (grid->larger_size - 1) * (passed_frames / static_cast<float>(n_frames_full)) + 1;
 
             }else{
-                item->display_size = (grid->smaller_size - 1) * (passed_frames / (float)n_frames_full) + 1;
+                it->display_size = (grid->smaller_size - 1) * (passed_frames / static_cast<float>(n_frames_full)) + 1;
 
             }
         }
