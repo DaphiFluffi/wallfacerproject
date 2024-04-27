@@ -7,6 +7,7 @@
 #include "cameraManager.h"
 #include "ioManager.h"
 #include "mediaGrid.h"
+#include "ofxGui.h"
 
 
 
@@ -120,15 +121,31 @@ public:
     float item_size = 0.8; // how big are the smaller items in here
     int n_items_drawn = 5; // how many items are drawn in  the collector
     float buffer_percentage = 0.05f;
+
     mediaGrid grid = mediaGrid(3, 3, 30, 300);
+
+    ofxPanel gui;
+    ofParameter<std::string> textInput;
+    ofxLabel textLabel;
+    bool bIsTextInputActive = false;
+
 
 
 
     collectorItem() : mediaItem(MediaType::COLLECTOR) {
         grid.adjustToCenteredSquare(buffer_percentage);
+        gui.setup();
+        gui.add(textInput.set("Name", ""));
+        gui.setPosition(0, 0 - gui.getHeight() - 20); // Position the GUI above the collectorItem
+        //gui.setMovable(false); // Make the GUI not movable
+
+        // Optional: hide the text input by default until clicked
+        gui.minimizeAll();
     };
 
     void update() override {
+
+        gui.setPosition(current_x , current_y - gui.getHeight()/ 2.0f); // Position the GUI above the collectorItem
 
 
         auto items = grid.get_n_first_full(n_items_drawn);
@@ -166,6 +183,7 @@ public:
             y += complete_items_height * (1- item_size) / n_items;
 
         };
+        gui.draw();
 
 
     }
