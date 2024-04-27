@@ -31,6 +31,10 @@ public:
     virtual void draw(float x, float y, float w, float h) = 0;
     virtual void drawMetadata(float x, float y, float w, float h) {};
 
+    bool is_empty() const {
+        return  type == MediaType::EMPTY;
+    }
+
     virtual void update() = 0;
     virtual void togglePause(){};
     
@@ -93,7 +97,7 @@ public:
 class emptyItem : public mediaItem
 {
 private:
-    ofColor color = ofColor(200);
+    ofColor color = ofColor(255);
 
 public:
     emptyItem() : mediaItem(MediaType::EMPTY){};

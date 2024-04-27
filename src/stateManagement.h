@@ -10,6 +10,7 @@
 #include <numeric>
 #include <math.h>
 #include <optional>
+#include "utils.h"
 
 enum class StateNames
 {
@@ -297,40 +298,15 @@ public:
     };
     virtual void draw()
     {
-        int screenWidth = ofGetWindowWidth();
-        int screenHeight = ofGetWindowHeight();
 
-        float aspectRatio = static_cast<float>(item->start_w) / static_cast<float>(item->start_h);
 
-        float drawWidth, drawHeight;
-        if (aspectRatio > 1)
-        { 
-            drawWidth = screenHeight * aspectRatio;
-            drawHeight = screenHeight;
-        }
-        else
-        { 
-            drawWidth = screenWidth;
-            drawHeight = screenWidth / aspectRatio;
-        }
-
-        if (drawWidth > screenWidth)
-        {
-            drawWidth = screenWidth;
-            drawHeight = drawWidth / aspectRatio;
-        }
-        if (drawHeight > screenHeight)
-        {
-            drawHeight = screenHeight;
-            drawWidth = drawHeight * aspectRatio;
-        }
-
-        // Calculate the position to center the mediaItem
-        float drawX = (screenWidth - drawWidth) / 2;
-        float drawY = (screenHeight - drawHeight) / 2;
+        auto [drawX, drawY, drawWidth, drawHeight] = get_centerted_box(static_cast<float>(item->start_w)/item->start_h);
 
         // Draw the mediaItem at the calculated position and size
         item->draw(drawX, drawY, drawWidth, drawHeight);
+
+        float screenWidth = ofGetScreenWidth();
+        float screenHeight = ofGetScreenHeight();
 
         float meta_x = drawX + drawWidth + 30;
         float meta_w = screenWidth - meta_x - 30;
@@ -375,19 +351,69 @@ public:
         }
         return nullptr;
     }
+
 };
+
+
+struct DisplayWindow {
+    int level;
+    mediaGrid* grid;
+
+    DisplayWindow(mediaGrid* g) : grid(g) {};
+
+    virtual std::unique_ptr<State> getDefaultState() {
+        return std::move(std::make_unique<BrowsingState>(grid));
+    };
+
+    mediaGrid* getGrid() const {
+        return grid;
+    }
+};
+
 
 class StateManager
 {
 private:
-    mediaGrid *grid = nullptr;
+
+    std::deque<std::unique_ptr<DisplayWindow>> windows;
+    mediaGrid *current_grid = nullptr;
     std::unique_ptr<State> state = nullptr;
 
-public:
-    StateManager(mediaGrid *grid) : grid(grid)
-    {
-        state = std::make_unique<BrowsingState>(grid);
+    StateManager() {
+
     };
+public:
+
+
+    StateManager(const StateManager&) = delete;
+    StateManager& operator=(const StateManager&) = delete;
+    static StateManager& getInstance() {
+        static StateManager instance;
+        return instance;
+    }
+
+    void addWindow(std::unique_ptr<DisplayWindow> window) {
+        window->level = static_cast<int>(windows.size());
+        windows.push_back(std::move(window));
+
+        setToBack();
+    };
+
+    void popWindow() {
+        if (windows.size() == 1) {
+            std::cerr << "Cannot pop the last window" << std::endl;
+            return;
+        };
+        // revert to standard
+        windows.back()->getDefaultState()->update();
+        windows.pop_back();
+        setToBack();
+    };
+
+    void setToBack() {
+        current_grid = windows.back()->getGrid();
+        state = std::make_unique<BrowsingState>(current_grid);
+    }
 
     void mouseDragged(int x, int y, int button);
     void mouseReleased(int x, int y, int button);
@@ -396,6 +422,20 @@ public:
     {
         state->mousePressed(x, y, button);
     }
+
+    bool keyPressed(int key);
+
+    void addToGridAbove(std::unique_ptr<mediaItem> item) {
+
+        if (windows.size() >= 2) {
+            auto second_last_grid = (*(windows.end() - 2))->getGrid(); 
+            second_last_grid->addItem(std::move(item));
+        }
+        else {
+            std::cout << "Cannot add to grid above, there is no grid above" << std::endl;
+        }
+    }
+
     void draw() { state->draw(); };
     void update()
     {

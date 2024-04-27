@@ -1,9 +1,8 @@
-//
-// Created by felix on 26.04.24.
-//
+
 #include "mediaGrid.h"
 
-mediaGrid::mediaGrid(int n_items_x, int n_items_y, int buffer_between, int item_size)
+
+mediaGrid::mediaGrid(int n_items_x, int n_items_y, float buffer_between, float item_size)
     : n_items_x(n_items_x), n_items_y(n_items_y), buffer_between(buffer_between), item_size(item_size) {
     // Initialize the grid with null pointers
 
@@ -17,17 +16,91 @@ mediaGrid::mediaGrid(int n_items_x, int n_items_y, int buffer_between, int item_
     }
 }
 
-void mediaGrid::addItem(std::unique_ptr<mediaItem> item, int x, int y) {
-    if (x < n_items_x && y < n_items_y) {
-        int start_x = x * (item_size + buffer_between) + buffer_between;
-        int start_y = y * (item_size + buffer_between) + buffer_between;
-        item->assign_start_cords(start_x, start_y, item_size);
+void mediaGrid::assignTo(mediaItem* item, int x, int y) {
 
+        float magic_constant = (x_start || y_start) ? 0.5f: 1.0f;
+
+        int start_x = x * (item_size + buffer_between) + buffer_between + x_start;
+        int start_y = y * (item_size + buffer_between) + buffer_between * magic_constant + y_start;
+
+        item->assign_start_cords(start_x, start_y, item_size);
+}
+
+void mediaGrid::addItem(std::unique_ptr<mediaItem> item, int x, int y) {
+
+
+    if(!item){
+        cerr << "Tried to add nullptr to grid" << endl;
+        return;
+    }
+
+    if (x < n_items_x && y < n_items_y) {
+        assignTo(item.get(), x, y);
         grid[x][y] = std::move(item);
     } else {
         cerr << "Invalid position for item" << endl;
     }
 }
+
+std::optional<std::tuple<int, int>> mediaGrid::first_free_cords() {
+
+
+    for (int i = 0; i < n_items_x; i++) {
+        for (int j = 0; j < n_items_y; j++) {
+            if (!grid[i][j] || grid[i][j]->type == MediaType::EMPTY) {
+                return std::make_tuple(i, j);
+            }
+        }
+    }
+    return std::nullopt;
+
+};
+
+vector<mediaItem *> mediaGrid::get_n_first_full(int n, bool skip_collector) {
+
+    vector<mediaItem *> vec = {};
+
+    if (n <= 0) return vec;
+
+    for (int i = 0; i < n_items_x; i++) {
+        for (int j = 0; j < n_items_y; j++) {
+            if (grid[i][j] && !grid[i][j]->is_empty() && (!skip_collector || grid[i][j]->type != MediaType::COLLECTOR)) {
+                vec.push_back(grid[i][j].get());
+                if (vec.size() == n) return vec;
+            }
+        }
+    }
+
+    return vec;
+};
+
+
+
+
+
+void mediaGrid::addItem(std::unique_ptr<mediaItem> item) {
+
+    if(!item){
+        cerr << "Tried to add nullptr to grid" << endl;
+        return;
+    }
+
+    auto cords = first_free_cords();
+
+    if (cords) {
+        auto [x,y] = cords.value();
+
+
+        assignTo(item.get(), x, y);
+        grid[x][y] = std::move(item);
+
+    } else {
+        std::cout << "grif full moving to buffer" << std::endl;
+    }
+
+
+}
+
 
 void mediaGrid::draw() {
     // change this such that there is a sorted priority queue depending on grid[x][y]->drawingPriority
@@ -120,3 +193,42 @@ void mediaGrid::update() {
     }
 }
 
+int mediaGrid::size() {
+    int i = 0;
+    for (int i = 0; i < n_items_x; i++) {
+        for (int j = 0; j < n_items_y; j++) {
+            if (grid[i][j] && !grid[i][j]->is_empty()) ++i;
+        }
+    }
+
+    return i;
+}
+
+
+void mediaGrid::adjustToCenteredSquare(float buffer_percentage) {
+
+    auto [drawX, drawY, drawWidth, drawHeight] = get_centerted_box();
+
+    x_start = drawX;
+    y_start = drawY;
+    width = drawWidth;
+    height = drawHeight;
+
+    buffer_between = drawWidth * buffer_percentage;
+    item_size = (drawWidth - buffer_between) / n_items_x - buffer_between;
+
+    for (int i = 0; i < n_items_x; i++) {
+        for (int j = 0; j < n_items_y; j++) {
+            if (grid[i][j])
+                assignTo(grid[i][j].get(), i, j);
+        }
+    }
+}
+
+ofRectangle mediaGrid::get_bounding_box() {
+    return ofRectangle(x_start, y_start, width, height);
+}
+
+bool mediaGrid::inside(float x, float y) {
+    return get_bounding_box().inside(x, y);
+}

@@ -7,6 +7,10 @@ void ofApp::setup()
 {
     ofBackground(255, 255, 255);
 
+    // add base window
+    state_manager.addWindow(std::move(std::make_unique<DisplayWindow>(&baseGrid)));
+
+
     cam_manager.setup();
     image_io_manager.setup();
     video_io_manager.setup();
@@ -17,31 +21,34 @@ void ofApp::setup()
     font_manager.setup(12, 20);
 
     // fill grid 
-    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 13); i++)
+    for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 12); i++)
     {
         auto img = std::make_unique<mediaImage>(image_io_manager.getData(i)); 
 
-        grid.addItem(std::move(img), i / 3, i % 3);
+        baseGrid.addItem(std::move(img));
     }
 
+    baseGrid.addItem(std::move(std::make_unique<collectorItem>()));
+
+
     auto a_collector = std::make_unique<collectorItem>();
-    grid.addItem(std::move(a_collector), 4, 1);
+    baseGrid.addItem(std::move(a_collector));
 
 
     auto vid = std::make_unique<mediaVideo>(video_io_manager.getData(0)); 
-    grid.addItem(std::move(vid), 4, 2);
+    baseGrid.addItem(std::move(vid));
 
 
 
     auto feed = std::make_unique<mediaFeed<cameraManager>>(cam_manager);
-    grid.addItem(std::move(feed), 5, 0);
+    baseGrid.addItem(std::move(feed));
     
 
     auto background_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayBg);
-    grid.addItem(std::move(background_feed), 5, 1);
+    baseGrid.addItem(std::move(background_feed));
 
     auto diff_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayDiff);
-    grid.addItem(std::move(diff_feed), 5, 2);
+    baseGrid.addItem(std::move(diff_feed));
 
     if (cmdArgs.find("--gmd") != cmdArgs.end())
     {
@@ -72,7 +79,11 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
 {
+
+
     cam_manager.keyPressed(key);
+
+    state_manager.keyPressed(key);
 }
 
 //--------------------------------------------------------------

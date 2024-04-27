@@ -6,7 +6,7 @@
 #include <tuple>
 #include "cameraManager.h"
 #include "ioManager.h"
-
+#include "mediaGrid.h"
 
 
 
@@ -112,20 +112,29 @@ private:
 
 
 public:
-    vector<std::unique_ptr<mediaItem>> items;
+
+    int n_items = 2;
+
+
     float rel_border = 0.075f; // the relative border to the edge
     float item_size = 0.8; // how big are the smaller items in here
     int n_items_drawn = 5; // how many items are drawn in  the collector
+    float buffer_percentage = 0.05f;
+    mediaGrid grid = mediaGrid(3, 3, 30, 300);
 
 
-    collectorItem() : mediaItem(MediaType::COLLECTOR){};
+
+    collectorItem() : mediaItem(MediaType::COLLECTOR) {
+        grid.adjustToCenteredSquare(buffer_percentage);
+    };
 
     void update() override {
 
-        const int n_items = min(n_items_drawn, static_cast<int>(items.size()));
 
-        for (int i = 0; i < n_items; ++i) {
-            items[i]->update();
+        auto items = grid.get_n_first_full(n_items_drawn);
+
+        for (auto& item : items) {
+            item->update();
         };
     };
 
@@ -135,7 +144,9 @@ public:
         ofSetColor(color);
         ofDrawRectangle(box);
 
-        const int n_items = min(n_items_drawn, static_cast<int>(items.size()));
+        auto items = grid.get_n_first_full(n_items_drawn);
+
+        const int n_items = std::min(n_items_drawn, static_cast<int>(items.size()));
 
         if (!n_items) return;
 
@@ -160,62 +171,51 @@ public:
     }
     void draw(const float x_in,const  float y_in,const  float width,const  float height) override
     {
-        ofSetColor(color);
-        ofDrawRectangle(x_in,y_in,width,height);
+        //ofSetColor(color);
+        //ofDrawRectangle(x_in,y_in,width,height);
 
-        const int n_items = min(n_items_drawn, static_cast<int>(items.size()));
+        // auto items = grid.get_n_first_full(n_items_drawn);
+        // const int n_items = min(n_items_drawn, static_cast<int>(items.size()));
 
-        if (!n_items) return;
-
-
-
-        // draw the contained items in an overlapping manner from top left to bottom right
-        const float complete_items_width = width * (1-rel_border * 2) ;
-        const float complete_items_height = height * (1-rel_border * 2) ;
-
-        float x = x_in + width * rel_border;
-        float y = y_in + height * rel_border;
-
-        for (int i = 0; i < n_items; ++i) {
-
-            items[i]->draw(x,y,complete_items_width * item_size, complete_items_height * item_size);
-            x += complete_items_width * (1- item_size) / n_items;
-            y += complete_items_height * (1- item_size) / n_items;
-
-        };
+        // if (!n_items) return;
 
 
+
+        // // draw the contained items in an overlapping manner from top left to bottom right
+        // const float complete_items_width = width * (1-rel_border * 2) ;
+        // const float complete_items_height = height * (1-rel_border * 2) ;
+
+        // float x = x_in + width * rel_border;
+        // float y = y_in + height * rel_border;
+
+        // for (int i = 0; i < n_items; ++i) {
+
+        //     items[i]->draw(x,y,complete_items_width * item_size, complete_items_height * item_size);
+        //     x += complete_items_width * (1- item_size) / n_items;
+        //     y += complete_items_height * (1- item_size) / n_items;
+
+        // };
+
+        grid.draw();
 
     }
+
+
 
     void add_item(std::unique_ptr<mediaItem> item)
     {
-        if(!item){
-            cerr << "Tried to add nullptr to collector" << endl;
-            return;
-        }
-        items.push_back(std::move(item));
-    }   
 
-    std::unique_ptr<mediaItem> remove_item(const int index)
-    {
-        if (index < 0 || index >= items.size()) return nullptr;
-
-        auto item = std::move(items[index]);
-        items.erase(items.begin() + index);
-        return item;
+        grid.addItem(std::move(item));
     }
 
-    std::unique_ptr<mediaItem> remove_item(const mediaItem* item)
+
+    std::unique_ptr<mediaItem> remove_item(mediaItem* item)
     {
-        for (int i = 0; i < items.size(); ++i)
-        {
-            if (items[i].get() == item)
-            {
-                return remove_item(i);
-            }
-        }
-        return nullptr;
+        return std::move(grid.pop_item(item));
+    }
+
+    mediaGrid* getGrid() {
+        return &grid;
     }
 
 };

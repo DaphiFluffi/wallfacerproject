@@ -8,6 +8,8 @@
 #include "mediaItems.h"
 #include "fontManager.h"
 #include "ioManager.h"
+#include <memory>
+#include <deque>
 
 class ofApp : public ofBaseApp
 {
@@ -32,8 +34,11 @@ public:
 	ioManager<ofImage> image_io_manager = ioManager<ofImage>("images", { "jpg", "png" });
 	ioManager<ofVideoPlayer> video_io_manager = ioManager<ofVideoPlayer>("videos", { "mp4",});
 
-	mediaGrid grid = mediaGrid(6, 3, 40, 270);
-	StateManager state_manager = StateManager(&grid);
+
+	mediaGrid baseGrid = mediaGrid(6, 3, 40, 270);
+
+
+	StateManager& state_manager = StateManager::getInstance();
 
 	cameraManager cam_manager = cameraManager(640, 480);
 

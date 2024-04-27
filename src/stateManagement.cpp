@@ -17,12 +17,12 @@ void StateManager::mouseDragged(int x, int y, int button){
     if (name == StateNames::BROWSING || name == StateNames::ITEM_MENU){
 
 
-        auto item = grid->get_item_by_cords(x, y);    
+        auto item = current_grid->get_item_by_cords(x, y);
         
-        if (!item) return;
+        if (!item || item->is_empty()) return;
 
 
-        state = std::make_unique<DraggingState>(x, y, grid, item);
+        state = std::make_unique<DraggingState>(x, y, current_grid, item);
     }
     
     state->mouseDragged(x, y, 0);
@@ -37,6 +37,22 @@ void DraggingState::mouseReleased(int x, int y, int button){
     if (button != 0) return;
     finished = true;
     auto [center_x, center_y] = item->get_center();
+
+    item->drawingPriotity = 0;
+
+    if (!grid->inside(center_x, center_y)) {
+        std::cout << "outside grid -> dropping item" << endl;
+        auto popped = grid->pop_item(item);
+        if (!popped) {
+            std::cerr << "Could not pop item" << std::endl;
+            return;
+        }
+
+        StateManager::getInstance().addToGridAbove(std::move(popped));
+
+
+        return ;
+    }
 
     auto matchedItems = grid->get_items_by_cords(center_x, center_y);
 
@@ -109,6 +125,19 @@ void DraggingState::mouseReleased(int x, int y, int button){
     
 }
 
+bool StateManager::keyPressed(int key) {
+    switch (key) {
+        case 'u':
+            std::cout << "Moving out of Window" << std::endl;
+            popWindow();
+            return true;
+        default:
+            return false;
+    }
+}
+
+
+
 unique_ptr<State> DraggingState::move_to_new_state(){
 
     if(finished)
@@ -140,7 +169,7 @@ void BrowsingState::update() {
     mediaItem* item = grid->get_item_by_cords(mouseX, mouseY);
 
     // adjust frame counts
-    if (item){  // if already active_el
+    if (item && !item->is_empty()){  // if already active_el
         if (active_el && active_el == item){
             if (passed_frames < n_frames_full) ++passed_frames;
 
@@ -221,8 +250,22 @@ void ItemMenuState::mousePressed(int x, int y, int button)
         switch (type.value())
         {
         case ButtonType::FULLSCREEN:
-            new_state = std::make_unique<FullScreenMode>(item, grid);
-            
+
+            if (item->type == MediaType::COLLECTOR) {
+
+                collectorItem* collector = dynamic_cast<collectorItem*>(item);
+                if (!collector){
+                    cerr << "Could not cast to collector in fullscreen move" << endl;
+                    return;
+                }
+
+                StateManager::getInstance().addWindow(std::make_unique<DisplayWindow>(collector->getGrid()));
+            }else {
+
+                new_state = std::make_unique<FullScreenMode>(item, grid);
+            }
+
+
             break;
         case ButtonType::PAUSE_RESUME:
             item->togglePause();
