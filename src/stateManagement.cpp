@@ -152,7 +152,6 @@ void BrowsingState::update() {
     mouseX = ofGetMouseX();
     mouseY = ofGetMouseY();
 
-    
     GridState::update();
 
     // update last possitions
@@ -247,6 +246,7 @@ void ItemMenuState::mousePressed(int x, int y, int button)
 
     if (type.has_value())
     {
+
         switch (type.value())
         {
         case ButtonType::FULLSCREEN:
@@ -269,6 +269,10 @@ void ItemMenuState::mousePressed(int x, int y, int button)
             break;
         case ButtonType::PAUSE_RESUME:
             item->togglePause();
+            break;
+
+            case ButtonType::SEARCH:
+            new_state = std::make_unique<SearchState>(grid, item);
             break;
         }
     }

@@ -11,6 +11,7 @@
 #include <math.h>
 #include <optional>
 #include "utils.h"
+#include "ofxGui.h"
 
 enum class StateNames
 {
@@ -19,6 +20,7 @@ enum class StateNames
     BROWSING,
     ITEM_MENU,
     FULL_SCREEN,
+    SEARCH,
 };
 
 class State
@@ -30,6 +32,7 @@ protected:
 public:
     StateNames getName() { return name; };
     State() = default;
+    virtual  ~State() = default;
     virtual void draw() = 0;
     virtual void update() = 0;
     virtual void mouseMoved(int x, int y){};
@@ -123,42 +126,7 @@ public:
 };
 
 
-enum class ButtonType {
-    FULLSCREEN,
-    PAUSE_RESUME,
-};
 
-
-struct Button {
-
-    float center_x, center_y;
-    float full_width;
-    float display_percentage;
-    ofColor color = ofColor(0, 255, 0);
-    ButtonType type;
-
-    Button(float x, float y, float w, ofColor c, ButtonType tp, float dper =1.0f) : center_x(x), center_y(y),
-     full_width(w), color(c), type(tp), display_percentage(dper) {};
-
-    ofRectangle get_rect()
-    {
-        float width = full_width * display_percentage;
-        return ofRectangle(center_x - width / 2, center_y - width / 2, width, width);
-    }
-
-    bool is_inside(float x, float y)
-    {
-        return get_rect().inside(x, y);
-    }
-
-    void draw()
-    {
-        ofSetColor(color);
-        ofDrawRectangle(get_rect());
-    }
-
-
-};
 
 
 class ButtonManagerState : public GridState {
@@ -233,11 +201,16 @@ public:
 
         float item_width = item->display_size * item->start_w;
 
-        buttons.push_back(Button(0, 0, max_percentage * item_width, ofColor(0, 255, 0), ButtonType::FULLSCREEN, 0.0f));
+        buttons.push_back(get_button(ButtonType::FULLSCREEN, max_percentage * item_width));
+
+        if (item->type == MediaType::IMAGE || item->type == MediaType::VIDEO) {
+            buttons.push_back(get_button(ButtonType::SEARCH, max_percentage * item_width));
+
+        }
 
         if (item->type == MediaType::VIDEO)
         {
-            buttons.push_back(Button(0, 0, max_percentage * item_width, ofColor(0, 0, 255), ButtonType::PAUSE_RESUME, 0.0f));
+            buttons.push_back(get_button(ButtonType::PAUSE_RESUME, max_percentage * item_width));
         }
 
         auto [center_x, center_y] = item->get_center();
@@ -245,6 +218,7 @@ public:
         possitionButtons(center_x, center_y, item_width * 0.2);
 
     };
+
 
 
     virtual void update()
@@ -263,7 +237,6 @@ public:
 
     virtual void draw()
     {
-        GridState::update();
 
         grid->draw();
         
@@ -352,6 +325,94 @@ public:
         return nullptr;
     }
 
+};
+
+
+
+class SearchState : public GridState
+{
+
+private:
+    mediaItem *item = nullptr;
+
+    std::unique_ptr<State> new_state = nullptr;
+
+    ofxPanel panel;
+    ofParameterGroup mode_settings;
+    vector<ofParameter<bool>> modes = vector<ofParameter<bool>>(2);
+
+    ofParameter<bool> start_search;
+
+    int last_active = 0;
+public:
+    SearchState(mediaGrid *gr, mediaItem *it) : GridState(gr), item(it)
+    {
+
+        mode_settings.setName("Search By");
+        mode_settings.add(modes[0].set("Brightness", true));
+        mode_settings.add(modes[1].set("Color", false));
+        panel.setup("Similarity Search Settings");
+        panel.add(mode_settings);
+        panel.add(start_search.set("Search", false));
+        name = StateNames::SEARCH;
+    };
+
+    ~SearchState() {
+        panel.unregisterMouseEvents();
+        panel.clear();
+    }
+
+    virtual void update()
+    {
+
+        if (start_search)
+        {
+            start_search.set(false);
+            std::cout << "Starting Search" << std::endl;
+        }
+        for (size_t i = 0; i < modes.size(); i++)
+        {
+            if (modes[i] && i!= last_active)
+            {
+                last_active = i;
+                break;
+            }
+        }
+
+        for (size_t i = 0; i < modes.size(); i++)
+        {
+            modes[i].set(i == last_active);
+        };
+
+
+
+        GridState::update();
+    }
+
+    virtual void mousePressed(int x, int y, int button) {
+
+        auto pos = panel.getShape();
+        if (button == 2 && !pos.inside(x,y))
+            new_state = std::make_unique<BrowsingState>(grid);
+
+
+    };
+
+    virtual void draw()
+    {
+        grid->draw();
+       panel.draw();
+
+    }
+
+    virtual unique_ptr<State> move_to_new_state() {
+
+        if (new_state)
+
+            return std::move(new_state);
+
+        return nullptr;
+    };
 };
 
 
