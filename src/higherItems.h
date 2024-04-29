@@ -68,6 +68,10 @@ public:
 
         datapoint.metadata.draw(x, y, w, h);
     };
+
+    virtual const Metadata* getMetaData() {
+        return &datapoint.metadata;
+    }
 };
 
 class mediaImage : public mediaItem
@@ -103,6 +107,10 @@ public:
 
         datapoint.metadata.draw(x, y, w, h);
     };
+
+    virtual const Metadata* getMetaData() {
+        return &datapoint.metadata;
+    }
 };
 
 

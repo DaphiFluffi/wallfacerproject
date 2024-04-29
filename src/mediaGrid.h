@@ -44,10 +44,10 @@ public:
 
 
     virtual mediaItem *get_item_by_cords(int x, int y);
+    virtual vector<mediaItem *> get_items_by_cords(int x, int y);
 
     int size();
 
-    vector<mediaItem *> get_items_by_cords(int x, int y);
     vector<mediaItem *> get_n_first_full(int n, bool skip_collector = true);
 
     std::unique_ptr<mediaItem> pop_item(int x, int y);

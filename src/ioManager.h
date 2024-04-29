@@ -81,6 +81,11 @@ public:
         return mediaPoints[index];
     }
 
+    std::vector<DataPoint<MediaType>>& getData() {
+        return mediaPoints;
+    }
+
+
     size_t size() const {
         return mediaPoints.size();
     }

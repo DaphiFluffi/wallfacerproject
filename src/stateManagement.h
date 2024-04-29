@@ -12,6 +12,7 @@
 #include <optional>
 #include "utils.h"
 #include "ofxGui.h"
+#include "searchManager.h"
 
 enum class StateNames
 {
@@ -326,10 +327,7 @@ public:
 
 };
 
-enum class searchModes {
-    BRIGHTNESS,
-    COLOR,
-};
+
 
 class searchGrid : public mediaGrid {
 
@@ -374,6 +372,8 @@ public:
     ~searchGrid() {
         panel.unregisterMouseEvents();
         panel.clear();
+
+        item->reset();
     };
 
     void draw() {
@@ -411,6 +411,14 @@ public:
 
     }
 
+    mediaItem *get_item_by_cords(int x, int y){
+        return mediaGrid::get_item_by_cords(x,y);
+    };
+    vector<mediaItem *> get_items_by_cords(int x, int y){
+        return mediaGrid::get_items_by_cords(x,y);
+    };
+
+
 };
 
 
@@ -421,6 +429,7 @@ struct DisplayWindow {
     mediaGrid* grid;
 
     DisplayWindow(mediaGrid* g) : grid(g) {};
+    virtual ~DisplayWindow() = default;
 
     virtual std::unique_ptr<State> getDefaultState() {
         return std::move(std::make_unique<BrowsingState>(grid));
@@ -485,7 +494,8 @@ public:
     };
 
     void setToBack() {
-        state = windows.back()->getDefaultState();
+        current_grid = windows.back()->getGrid();
+        state = std::make_unique<BrowsingState>(current_grid);
     }
 
     void mouseDragged(int x, int y, int button);

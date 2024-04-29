@@ -50,6 +50,10 @@ public:
 
     float display_size;
 
+    void reset() {
+        current_x = start_x;
+        current_y = start_y;
+    }
     void assign_start_cords(int x, int y, int width, float display_size = 1.0)
     {
         start_x = current_x = x;
@@ -86,6 +90,10 @@ public:
     {
         const auto box = get_bounding_box();
         return box.inside(x, y);
+    }
+
+    const Metadata* getMetaData() {
+        return nullptr;
     }
 
 
