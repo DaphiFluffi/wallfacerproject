@@ -72,26 +72,36 @@ public:
     virtual const Metadata* getMetaData() {
         return &datapoint.metadata;
     }
+    std::string getId() {
+        return datapoint.filePath;
+    }
 };
 
 class mediaImage : public mediaItem
 {
     ofImage item;
-    DataPoint<ofImage>& datapoint;
+    DataPoint<ofImage> datapoint;
 
 public:
-    explicit mediaImage(DataPoint<ofImage>& data) : mediaItem(MediaType::IMAGE), datapoint(data){
+
+    explicit mediaImage(DataPoint<ofImage> data) : mediaItem(MediaType::IMAGE), datapoint(data){
 
         item = data.loadMedia();
+        if (!item.isAllocated()) {
+            std::cerr << "could not load image " << data.filePath << std::endl;
+        }
     };
+
+
 
     void draw(float size = 1.0) override
     {
 
         auto box = get_bounding_box();
         ofSetColor(ofColor::white);
+        if (item.isAllocated())
 
-        item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+            item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
     }
     void draw(const float x,const  float y,const  float w,const  float h) override
     {
@@ -104,12 +114,17 @@ public:
 
 
     void drawMetadata(const float x,const  float y,const  float w,const  float h) override {
+        if (item.isAllocated())
 
         datapoint.metadata.draw(x, y, w, h);
     };
 
-    virtual const Metadata* getMetaData() {
-        return &datapoint.metadata;
+    const Metadata* getMetaData() {
+        return &(datapoint.metadata);
+    }
+
+    std::string getId() {
+        return datapoint.filePath;
     }
 };
 

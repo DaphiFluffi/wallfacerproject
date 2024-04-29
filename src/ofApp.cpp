@@ -1,6 +1,7 @@
 // ofApp.h
 
 #include "ofApp.h"
+#include "searchManager.h"
 
 //--------------------------------------------------------------
 void ofApp::setup()
@@ -57,6 +58,9 @@ void ofApp::setup()
         image_io_manager.updateMetadata();
         video_io_manager.updateMetadata();
     }
+
+    SearchManager::getInstance().setup(&image_io_manager, &video_io_manager);
+
 }
 
 //--------------------------------------------------------------

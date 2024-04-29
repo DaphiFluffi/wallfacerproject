@@ -92,9 +92,14 @@ public:
         return box.inside(x, y);
     }
 
-    const Metadata* getMetaData() {
+    virtual const Metadata* getMetaData() {
         return nullptr;
     }
+
+    virtual std::string getId() {
+        return "";
+    }
+
 
 
 };

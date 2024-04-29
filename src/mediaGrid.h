@@ -48,6 +48,8 @@ public:
 
     int size();
 
+    void clear();
+
     vector<mediaItem *> get_n_first_full(int n, bool skip_collector = true);
 
     std::unique_ptr<mediaItem> pop_item(int x, int y);

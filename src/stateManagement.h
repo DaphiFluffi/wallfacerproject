@@ -342,6 +342,8 @@ class searchGrid : public mediaGrid {
 
     searchModes active_mode = searchModes::BRIGHTNESS;
 
+    SearchManager& search_manager = SearchManager::getInstance();
+
 public:
 
     searchGrid(mediaItem* it): item(it),
@@ -383,16 +385,25 @@ public:
         item->draw(larger_size);
     };
 
+    void search_and_fill() {
+        auto imgs = search_manager.search_imgs(item, active_mode, distanceMetrics::DEFAULT, 4);
+
+        std::cout << "First Image" << imgs[0].data.filePath << std::endl;
+
+        clear();
+        for (auto& img : imgs) {
+
+            std::cout << "Adding Image" << img.data.filePath << std::endl;
+            addItem(std::move(std::make_unique<mediaImage>(img.data)));
+
+        }
+
+    };
+
     void update()
     {
 
         mediaGrid::update();
-
-        if (start_search)
-        {
-            start_search.set(false);
-            std::cout << "Starting Search" << std::endl;
-        }
         for (size_t i = 0; i < modes.size(); i++)
         {
             if (modes[i] && i!= static_cast<int>(active_mode))
@@ -407,6 +418,12 @@ public:
             modes[i].set(i == static_cast<int>(active_mode));
         };
 
+
+        if (start_search)
+        {
+            start_search.set(false);
+            search_and_fill();
+        }
 
 
     }

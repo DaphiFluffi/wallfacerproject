@@ -45,8 +45,8 @@ void mediaGrid::addItem(std::unique_ptr<mediaItem> item, int x, int y) {
 std::optional<std::tuple<int, int>> mediaGrid::first_free_cords() {
 
 
-    for (int i = 0; i < n_items_x; i++) {
-        for (int j = 0; j < n_items_y; j++) {
+    for (int j = 0; j < n_items_y; j++) {
+        for (int i = 0; i < n_items_x; i++) {
             if (!grid[i][j] || grid[i][j]->type == MediaType::EMPTY) {
                 return std::make_tuple(i, j);
             }
@@ -203,6 +203,16 @@ int mediaGrid::size() {
 
     return i;
 }
+
+void mediaGrid::clear() {
+    for (int i = 0; i < n_items_x; i++) {
+        for (int j = 0; j < n_items_y; j++) {
+            if (grid[i][j]->type != MediaType::COLLECTOR)
+                grid[i][j] = std::make_unique<emptyItem>();
+
+        }
+    }
+};
 
 
 void mediaGrid::adjustToCenteredSquare(float buffer_percentage) {

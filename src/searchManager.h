@@ -17,20 +17,28 @@
 
 template <typename MediaType>
 struct SearchResult {
-    const DataPoint<MediaType>* data;
+    DataPoint<MediaType> data;
     float score;
 
     bool operator<(const SearchResult& other) const {
         return score < other.score;
     }
 };
-
 class SearchManager {
-
 private:
     ioManager<ofImage>* image_io_manager = nullptr;
     ioManager<ofVideoPlayer>* video_io_manager = nullptr;
+
+    SearchManager() = default;
+
 public:
+    SearchManager(const SearchManager&) = delete;
+    SearchManager& operator=(const SearchManager&) = delete;
+
+    static SearchManager& getInstance() {
+        static SearchManager instance;
+        return instance;
+    }
 
     void setup(ioManager<ofImage>* img, ioManager<ofVideoPlayer>* vid) {
         if (!img && !vid) {
@@ -58,20 +66,33 @@ public:
             return {};
         }
 
-        const auto data = image_io_manager->getData();
+        auto data = image_io_manager->getData();
+
+        std::cout << "init path" <<  data[0].filePath << std::endl;
 
         std::vector<SearchResult<ofImage>> results;
 
-        for (auto& datapoint : data) {
-            float score = score_func(mode, metric, goal, datapoint.metadata);
-            results.push_back(SearchResult<ofImage>{&datapoint, score});
+        auto og_file_path = item->getId();
+
+        for (size_t i = 0; i < data.size(); i++) {
+            if(og_file_path ==data[i].filePath) {
+                continue;
+            }
+
+            float score = score_func(mode, metric, goal, data[i].metadata);
+            results.push_back(SearchResult<ofImage>{data[i], score});
         }
 
         std::sort(results.begin(), results.end());
 
+        std::cout << "result path" <<  results[0].data.filePath << std::endl;
+
+
         if (max_samples > 0 && max_samples < static_cast<int>( results.size())) {
             results.resize(max_samples);
         }
+
+        std::cout << "result path2" <<  results[0].data.filePath << std::endl;
 
         return results;
     };
@@ -92,12 +113,17 @@ public:
             return {};
         }
 
-        const auto& data = video_io_manager->getData();
+        auto& data = video_io_manager->getData();
         std::vector<SearchResult<ofVideoPlayer>> results;
 
-        for (auto& datapoint : data) {
-            float score = score_func(mode, metric, goal, datapoint.metadata);
-            results.push_back(SearchResult<ofVideoPlayer>{&datapoint, score});
+        auto og_file_path = item->getId();
+
+        for (size_t i = 0; i < data.size(); i++) {
+            if(og_file_path ==data[i].filePath) {
+                continue;
+            }
+            float score = score_func(mode, metric, goal, data[i].metadata);
+            results.push_back(SearchResult<ofVideoPlayer>{data[i], score});
         }
 
         std::sort(results.begin(), results.end());
