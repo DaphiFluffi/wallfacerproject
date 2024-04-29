@@ -20,7 +20,6 @@ enum class StateNames
     BROWSING,
     ITEM_MENU,
     FULL_SCREEN,
-    SEARCH,
 };
 
 class State
@@ -269,7 +268,7 @@ public:
     {
         item->update();
     };
-    virtual void draw()
+    virtual void draw() // later: more efficient
     {
 
 
@@ -327,15 +326,15 @@ public:
 
 };
 
+enum class searchModes {
+    BRIGHTNESS,
+    COLOR,
+};
 
+class searchGrid : public mediaGrid {
 
-class SearchState : public GridState
-{
-
-private:
-    mediaItem *item = nullptr;
-
-    std::unique_ptr<State> new_state = nullptr;
+    mediaItem* item;
+    float buffer_percentage = 0.05f;
 
     ofxPanel panel;
     ofParameterGroup mode_settings;
@@ -343,10 +342,12 @@ private:
 
     ofParameter<bool> start_search;
 
-    int last_active = 0;
+    searchModes active_mode = searchModes::BRIGHTNESS;
+
 public:
-    SearchState(mediaGrid *gr, mediaItem *it) : GridState(gr), item(it)
-    {
+
+    searchGrid(mediaItem* it): item(it),
+        mediaGrid(3, 3, 30, 300) {
 
         mode_settings.setName("Search By");
         mode_settings.add(modes[0].set("Brightness", true));
@@ -354,16 +355,38 @@ public:
         panel.setup("Similarity Search Settings");
         panel.add(mode_settings);
         panel.add(start_search.set("Search", false));
-        name = StateNames::SEARCH;
+
+
+        adjustToCenteredSquare(buffer_percentage);
+
+
+        float left_middle = static_cast<float>(x_start)/2;
+
+        panel.setPosition(left_middle - panel.getWidth()/2,100);
+
+        auto box = item->get_bounding_box(larger_size);
+        item->current_x = left_middle - box.width/2;
+        item->current_y = 400;
+
     };
 
-    ~SearchState() {
+
+    ~searchGrid() {
         panel.unregisterMouseEvents();
         panel.clear();
-    }
+    };
 
-    virtual void update()
+    void draw() {
+        mediaGrid::draw();
+
+        panel.draw();
+        item->draw(larger_size);
+    };
+
+    void update()
     {
+
+        mediaGrid::update();
 
         if (start_search)
         {
@@ -372,48 +395,25 @@ public:
         }
         for (size_t i = 0; i < modes.size(); i++)
         {
-            if (modes[i] && i!= last_active)
+            if (modes[i] && i!= static_cast<int>(active_mode))
             {
-                last_active = i;
+                active_mode = static_cast<searchModes>(i);
                 break;
             }
         }
 
         for (size_t i = 0; i < modes.size(); i++)
         {
-            modes[i].set(i == last_active);
+            modes[i].set(i == static_cast<int>(active_mode));
         };
 
 
 
-        GridState::update();
     }
 
-    virtual void mousePressed(int x, int y, int button) {
-
-        auto pos = panel.getShape();
-        if (button == 2 && !pos.inside(x,y))
-            new_state = std::make_unique<BrowsingState>(grid);
-
-
-    };
-
-    virtual void draw()
-    {
-        grid->draw();
-       panel.draw();
-
-    }
-
-    virtual unique_ptr<State> move_to_new_state() {
-
-        if (new_state)
-
-            return std::move(new_state);
-
-        return nullptr;
-    };
 };
+
+
 
 
 struct DisplayWindow {
@@ -429,6 +429,19 @@ struct DisplayWindow {
     mediaGrid* getGrid() const {
         return grid;
     }
+};
+
+struct SearchWindow : public DisplayWindow {
+
+    searchGrid search_grid;
+
+    SearchWindow(mediaItem* it): search_grid(it), DisplayWindow(&search_grid){
+        if (!it) {
+            std::cerr << "Item to Search Window is None" << std::endl;
+        }
+
+    }
+
 };
 
 
@@ -472,8 +485,7 @@ public:
     };
 
     void setToBack() {
-        current_grid = windows.back()->getGrid();
-        state = std::make_unique<BrowsingState>(current_grid);
+        state = windows.back()->getDefaultState();
     }
 
     void mouseDragged(int x, int y, int button);

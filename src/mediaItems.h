@@ -27,6 +27,7 @@ public:
     int drawingPriotity = 0;
     MediaType type;
 
+    virtual ~mediaItem() = default;
     virtual void draw(float display_size = 1.0) = 0;
     virtual void draw(float x, float y, float w, float h) = 0;
     virtual void drawMetadata(float x, float y, float w, float h) {};
@@ -43,7 +44,6 @@ public:
 
     explicit mediaItem(MediaType type) : type(type){};
 
-    virtual ~mediaItem() = default;
 
     int start_x, start_y;
     int current_x, current_y, start_w, start_h;

@@ -31,16 +31,19 @@ public:
 
     mediaGrid(int n_items_x, int n_items_y, float buffer_between, float item_size);
 
+    virtual ~mediaGrid() = default;
+    virtual void draw();
+    virtual void update();
+
     void adjustToCenteredSquare(float);
 
-    void assignTo(mediaItem* item, int x, int y);
 
+    void assignTo(mediaItem* item, int x, int y);
     void addItem(std::unique_ptr<mediaItem> item, int x, int y);
     void addItem(std::unique_ptr<mediaItem> item);
 
-    void draw();
 
-    mediaItem *get_item_by_cords(int x, int y);
+    virtual mediaItem *get_item_by_cords(int x, int y);
 
     int size();
 
@@ -55,7 +58,6 @@ public:
 
     tuple<int, int> get_cords_by_item(mediaItem *item);
 
-    void update();
 
     ofRectangle get_bounding_box();
     bool inside(float x, float y);

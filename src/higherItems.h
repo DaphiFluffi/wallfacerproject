@@ -241,6 +241,7 @@ public:
         const auto box = get_bounding_box();
         ofSetColor(color);
         ofDrawRectangle(box);
+        gui.draw();
 
         auto items = grid.get_n_first_full(n_items_drawn);
 
@@ -265,35 +266,10 @@ public:
 
         };
 
-        gui.draw();
 
     }
     void draw(const float x_in,const  float y_in,const  float width,const  float height) override
     {
-        //ofSetColor(color);
-        //ofDrawRectangle(x_in,y_in,width,height);
-
-        // auto items = grid.get_n_first_full(n_items_drawn);
-        // const int n_items = min(n_items_drawn, static_cast<int>(items.size()));
-
-        // if (!n_items) return;
-
-
-
-        // // draw the contained items in an overlapping manner from top left to bottom right
-        // const float complete_items_width = width * (1-rel_border * 2) ;
-        // const float complete_items_height = height * (1-rel_border * 2) ;
-
-        // float x = x_in + width * rel_border;
-        // float y = y_in + height * rel_border;
-
-        // for (int i = 0; i < n_items; ++i) {
-
-        //     items[i]->draw(x,y,complete_items_width * item_size, complete_items_height * item_size);
-        //     x += complete_items_width * (1- item_size) / n_items;
-        //     y += complete_items_height * (1- item_size) / n_items;
-
-        // };
 
         grid.draw();
 

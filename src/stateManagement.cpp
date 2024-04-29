@@ -271,8 +271,8 @@ void ItemMenuState::mousePressed(int x, int y, int button)
             item->togglePause();
             break;
 
-            case ButtonType::SEARCH:
-            new_state = std::make_unique<SearchState>(grid, item);
+        case ButtonType::SEARCH:
+            StateManager::getInstance().addWindow(std::make_unique<SearchWindow>(item));
             break;
         }
     }
