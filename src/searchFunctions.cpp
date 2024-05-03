@@ -59,6 +59,17 @@ float cos_similarity(const std::tuple<const std::vector<float>&, const std::vect
     return (cos_similarity(std::get<0>(a), std::get<0>(b)) + cos_similarity(std::get<1>(a), std::get<1>(b)) + cos_similarity(std::get<2>(a), std::get<2>(b))) / 3;
 }
 
+bool invalidMetricCombination(searchModes mode, distanceMetrics metric) {
+
+    if(metric == distanceMetrics::COS_SIMILARITY && mode != searchModes::COLOR) {
+        return true;
+    }
+
+    return false;
+
+};
+
+
 distanceMetrics get_default_metric(searchModes mode) {
     switch (mode) {
         case searchModes::BRIGHTNESS:

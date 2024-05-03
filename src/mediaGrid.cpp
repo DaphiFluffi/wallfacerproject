@@ -209,7 +209,7 @@ void mediaGrid::clear() {
         for (int j = 0; j < n_items_y; j++) {
             if (grid[i][j]->type != MediaType::COLLECTOR)
                 grid[i][j] = std::make_unique<emptyItem>();
-
+                assignTo(grid[i][j].get(), i, j);
         }
     }
 };

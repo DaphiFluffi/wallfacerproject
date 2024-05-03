@@ -338,9 +338,14 @@ class searchGrid : public mediaGrid {
     ofParameterGroup mode_settings;
     vector<ofParameter<bool>> modes = vector<ofParameter<bool>>(2);
 
+    ofParameterGroup sim_functions;
+    vector<ofParameter<bool>> methods = vector<ofParameter<bool>>(3);
+
+
     ofParameter<bool> start_search;
 
     searchModes active_mode = searchModes::BRIGHTNESS;
+    distanceMetrics active_metric = get_default_metric(active_mode);
 
     SearchManager& search_manager = SearchManager::getInstance();
 
@@ -352,8 +357,16 @@ public:
         mode_settings.setName("Search By");
         mode_settings.add(modes[0].set("Brightness", true));
         mode_settings.add(modes[1].set("Color", false));
+
+        sim_functions.setName("Method");
+        sim_functions.add(methods[0].set("MAE", false));
+        sim_functions.add(methods[1].set("MSE", false));
+        sim_functions.add(methods[2].set("Cosine Sim", false));
+
+
         panel.setup("Similarity Search Settings");
         panel.add(mode_settings);
+        panel.add(sim_functions);
         panel.add(start_search.set("Search", false));
 
 
@@ -386,7 +399,7 @@ public:
     };
 
     void search_and_fill() {
-        auto imgs = search_manager.search_imgs(item, active_mode, distanceMetrics::DEFAULT, 4);
+        auto imgs = search_manager.search_imgs(item, active_mode, active_metric, 4);
 
         std::cout << "First Image" << imgs[0].data.filePath << std::endl;
 
@@ -394,14 +407,21 @@ public:
         for (auto& img : imgs) {
 
             std::cout << "Adding Image" << img.data.filePath << std::endl;
-            addItem(std::move(std::make_unique<mediaImage>(img.data)));
+
+            auto media_item = std::make_unique<mediaImage>(img.data);
+            //media_item->score = img.score;
+            addItem(std::move(media_item));
 
         }
 
     };
 
+
+
     void update()
     {
+
+        bool serchModeChanged = false;
 
         mediaGrid::update();
         for (size_t i = 0; i < modes.size(); i++)
@@ -409,6 +429,7 @@ public:
             if (modes[i] && i!= static_cast<int>(active_mode))
             {
                 active_mode = static_cast<searchModes>(i);
+                serchModeChanged = true;
                 break;
             }
         }
@@ -418,6 +439,29 @@ public:
             modes[i].set(i == static_cast<int>(active_mode));
         };
 
+        if (serchModeChanged) {
+            active_metric = get_default_metric(active_mode);
+
+        } else {
+            for (size_t i = 0; i < methods.size(); i++)
+            {
+                if (methods[i] && i+1!= static_cast<int>(active_metric) && !invalidMetricCombination(active_mode, distanceMetrics(i+1)))
+                {
+                    active_metric = static_cast<distanceMetrics>(i +1);
+
+                    break;
+                }
+            }
+
+
+        }
+        for (size_t i = 0; i < methods.size(); i++)
+        {
+            methods[i].set(i+1 == static_cast<int>(active_metric));
+
+            std::cout << "i " << 0 << " " << methods[i] << "mode "  << (int) active_mode << "metric " << (int) active_metric << endl;
+
+        };
 
         if (start_search)
         {

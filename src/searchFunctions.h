@@ -28,6 +28,8 @@ enum class distanceMetrics {
     COS_SIMILARITY,
 };
 
+bool invalidMetricCombination(searchModes mode, distanceMetrics metric);
+
 float mae(const float& a, const float& b);
 float mae(const std::vector<float>& a, const std::vector<float>& b) ;
 float mse(const float& a, const float& b);

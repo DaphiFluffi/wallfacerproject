@@ -12,7 +12,127 @@
 
 
 
-class mediaVideo : public mediaItem
+
+class CustomGuiGroup : public ofxGuiGroup {
+public:
+    CustomGuiGroup() : ofxGuiGroup() {
+        header = false;  // Disable the header by default in this custom class
+    }
+
+    // Constructor with parameters
+    CustomGuiGroup(const ofParameterGroup &parameters, const std::string &filename = "settings.xml", float x = 10, float y = 10)
+        : ofxGuiGroup(parameters, filename, x, y) {
+        header = false;
+    }
+
+    // Override the render method to exclude header drawing
+    void render() override {
+        for (auto& element : collection) {
+            element->draw();
+        }
+    }
+
+    // Override mouse events to exclude header interactions
+    bool mousePressed(ofMouseEventArgs &args) override {
+        if (!b.inside(args.x, args.y)) return false; // Early exit if click is outside the group bounds
+        for (auto& element : collection) {
+            if (element->mousePressed(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool mouseReleased(ofMouseEventArgs &args) override {
+        for (auto& element : collection) {
+            if (element->mouseReleased(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool mouseDragged(ofMouseEventArgs &args) override {
+        for (auto& element : collection) {
+            if (element->mouseDragged(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool mouseMoved(ofMouseEventArgs &args) override {
+        for (auto& element : collection) {
+            if (element->mouseMoved(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool mouseScrolled(ofMouseEventArgs &args) override {
+        for (auto& element : collection) {
+            if (element->mouseScrolled(args)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Optionally provide methods to manually manage the header
+    void enableHeader() {
+        header = true;
+    }
+
+    void disableHeader() {
+        header = false;
+    }
+
+protected:
+    bool header; // This controls whether the header is considered in interactions
+};
+
+
+
+
+class labeledItem : public mediaItem {
+
+public:
+    CustomGuiGroup gui;
+    ofParameter<std::string> textInput;
+    std::string title = "";
+    bool gui_active = false;
+
+    labeledItem(MediaType type, std::string label = "", std::string init = ""): mediaItem(type), title(label){
+
+        if (title != "") {
+
+            gui.setup();
+            gui.add(textInput.set(title, init));
+            gui.setPosition(0, 0 - gui.getHeight() - 20);
+
+            gui_active = true;
+        }
+    };
+
+    void update_gui_pos() {
+        const auto box = get_bounding_box();
+
+        gui.setPosition(box.x + std::max(box.width/2 - gui.getWidth()/2.0f, 0.0f), box.y - gui.getHeight()/ 2.0f);
+
+    };
+
+    void draw() {
+        if (gui_active) {
+            gui.draw();
+        }
+    };
+
+};
+
+
+
+class mediaVideo : public labeledItem
 {
     ofVideoPlayer item;
     DataPoint<ofVideoPlayer>& datapoint;
@@ -20,7 +140,7 @@ class mediaVideo : public mediaItem
 
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data) : mediaItem(MediaType::VIDEO), datapoint(data){
+    mediaVideo(DataPoint<ofVideoPlayer>& data) : labeledItem(MediaType::VIDEO), datapoint(data){
 
         item = data.loadMedia();
         item.setLoopState(OF_LOOP_NORMAL);
@@ -130,87 +250,7 @@ public:
 
 
 
-class CustomGuiGroup : public ofxGuiGroup {
-public:
-    CustomGuiGroup() : ofxGuiGroup() {
-        header = false;  // Disable the header by default in this custom class
-    }
-
-    // Constructor with parameters
-    CustomGuiGroup(const ofParameterGroup &parameters, const std::string &filename = "settings.xml", float x = 10, float y = 10)
-        : ofxGuiGroup(parameters, filename, x, y) {
-        header = false;
-    }
-
-    // Override the render method to exclude header drawing
-    void render() override {
-        for (auto& element : collection) {
-            element->draw();
-        }
-    }
-
-    // Override mouse events to exclude header interactions
-    bool mousePressed(ofMouseEventArgs &args) override {
-        if (!b.inside(args.x, args.y)) return false; // Early exit if click is outside the group bounds
-        for (auto& element : collection) {
-            if (element->mousePressed(args)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool mouseReleased(ofMouseEventArgs &args) override {
-        for (auto& element : collection) {
-            if (element->mouseReleased(args)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool mouseDragged(ofMouseEventArgs &args) override {
-        for (auto& element : collection) {
-            if (element->mouseDragged(args)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool mouseMoved(ofMouseEventArgs &args) override {
-        for (auto& element : collection) {
-            if (element->mouseMoved(args)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool mouseScrolled(ofMouseEventArgs &args) override {
-        for (auto& element : collection) {
-            if (element->mouseScrolled(args)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Optionally provide methods to manually manage the header
-    void enableHeader() {
-        header = true;
-    }
-
-    void disableHeader() {
-        header = false;
-    }
-
-protected:
-    bool header; // This controls whether the header is considered in interactions
-};
-
-
-class collectorItem : public mediaItem
+class collectorItem : public labeledItem
 {
 
 private:
@@ -234,23 +274,16 @@ public:
  // Position the label at x=100, y=100
     }
 
-    CustomGuiGroup gui;
-    ofParameter<std::string> textInput;
 
-    collectorItem() : mediaItem(MediaType::COLLECTOR) {
+
+    collectorItem() : labeledItem(MediaType::COLLECTOR, "Name") {
         grid.adjustToCenteredSquare(buffer_percentage);
 
-        gui.setup();
-        gui.add(textInput.set("Name", ""));
-        gui.setPosition(0, 0 - gui.getHeight() - 20); // Position the GUI above the collectorItem
     };
 
     void update() override {
 
-        const auto box = get_bounding_box();
-
-      gui.setPosition(box.x + std::max(box.width/2 - gui.getWidth()/2.0f, 0.0f), box.y - gui.getHeight()/ 2.0f); // Position the GUI above the collectorItem
-
+        update_gui_pos();
 
         auto items = grid.get_n_first_full(n_items_drawn);
 
@@ -264,7 +297,8 @@ public:
         const auto box = get_bounding_box();
         ofSetColor(color);
         ofDrawRectangle(box);
-        gui.draw();
+
+        labeledItem::draw();
 
         auto items = grid.get_n_first_full(n_items_drawn);
 

@@ -2,11 +2,9 @@
 
 
 #include "ofMain.h"
-#include <memory>
 #include <tuple>
-#include "cameraManager.h"
 #include "ioManager.h"
-
+#include <optional>
 
 
 enum class MediaType

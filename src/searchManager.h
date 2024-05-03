@@ -20,9 +20,6 @@ struct SearchResult {
     DataPoint<MediaType> data;
     float score;
 
-    bool operator<(const SearchResult& other) const {
-        return score < other.score;
-    }
 };
 class SearchManager {
 private:
@@ -83,7 +80,9 @@ public:
             results.push_back(SearchResult<ofImage>{data[i], score});
         }
 
-        std::sort(results.begin(), results.end());
+        std::sort(results.begin(), results.end(), [metric](const SearchResult<ofImage>& a, const SearchResult<ofImage>& b) {
+                    return (metric == distanceMetrics::COS_SIMILARITY) ? (a.score > b.score) : (a.score < b.score);
+                });
 
         std::cout << "result path" <<  results[0].data.filePath << std::endl;
 
@@ -126,7 +125,9 @@ public:
             results.push_back(SearchResult<ofVideoPlayer>{data[i], score});
         }
 
-        std::sort(results.begin(), results.end());
+        std::sort(results.begin(), results.end(), [metric](const SearchResult<ofVideoPlayer>& a, const SearchResult<ofVideoPlayer>& b) {
+            return (metric == distanceMetrics::COS_SIMILARITY) ? (a.score > b.score) : (a.score < b.score);
+        });
 
         if (max_samples > 0 && max_samples < results.size()) {
             results.resize(max_samples);
