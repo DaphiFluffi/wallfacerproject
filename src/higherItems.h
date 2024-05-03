@@ -15,6 +15,8 @@
 
 class CustomGuiGroup : public ofxGuiGroup {
 public:
+
+    bool frozen = false;
     CustomGuiGroup() : ofxGuiGroup() {
         header = false;  // Disable the header by default in this custom class
     }
@@ -34,6 +36,7 @@ public:
 
     // Override mouse events to exclude header interactions
     bool mousePressed(ofMouseEventArgs &args) override {
+        if(frozen) return false;
         if (!b.inside(args.x, args.y)) return false; // Early exit if click is outside the group bounds
         for (auto& element : collection) {
             if (element->mousePressed(args)) {
@@ -44,6 +47,8 @@ public:
     }
 
     bool mouseReleased(ofMouseEventArgs &args) override {
+        if(frozen) return false;
+
         for (auto& element : collection) {
             if (element->mouseReleased(args)) {
                 return true;
@@ -53,6 +58,8 @@ public:
     }
 
     bool mouseDragged(ofMouseEventArgs &args) override {
+        if(frozen) return false;
+
         for (auto& element : collection) {
             if (element->mouseDragged(args)) {
                 return true;
@@ -62,6 +69,8 @@ public:
     }
 
     bool mouseMoved(ofMouseEventArgs &args) override {
+        if(frozen) return false;
+
         for (auto& element : collection) {
             if (element->mouseMoved(args)) {
                 return true;
@@ -103,7 +112,7 @@ public:
     std::string title = "";
     bool gui_active = false;
 
-    labeledItem(MediaType type, std::string label = "", std::string init = ""): mediaItem(type), title(label){
+    labeledItem(MediaType type, std::string label = "", std::string init = "", bool frozen = false): mediaItem(type), title(label){
 
         if (title != "") {
 
@@ -111,22 +120,35 @@ public:
             gui.add(textInput.set(title, init));
             gui.setPosition(0, 0 - gui.getHeight() - 20);
 
+            gui.frozen = frozen;
+
             gui_active = true;
         }
     };
 
     void update_gui_pos() {
+
+        if(!gui_active) return;
+
         const auto box = get_bounding_box();
 
         gui.setPosition(box.x + std::max(box.width/2 - gui.getWidth()/2.0f, 0.0f), box.y - gui.getHeight()/ 2.0f);
 
     };
 
+
+
     void draw() {
         if (gui_active) {
             gui.draw();
         }
     };
+
+    void reset_label() {
+        gui.clear();
+        title = "";
+        gui_active = false;
+    }
 
 };
 
@@ -140,7 +162,7 @@ class mediaVideo : public labeledItem
 
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data) : labeledItem(MediaType::VIDEO), datapoint(data){
+    mediaVideo(DataPoint<ofVideoPlayer>& data, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::VIDEO, label, init, frozen), datapoint(data){
 
         item = data.loadMedia();
         item.setLoopState(OF_LOOP_NORMAL);
@@ -166,6 +188,9 @@ public:
 
     void update() override
     {
+
+        update_gui_pos();
+
         if (active)
             item.update();
     };
@@ -176,6 +201,8 @@ public:
         ofSetColor(ofColor::white);
 
         item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+
+        labeledItem::draw();
     }
 
     void draw(const float x,const  float y,const  float w,const  float h) override {
@@ -197,14 +224,14 @@ public:
     }
 };
 
-class mediaImage : public mediaItem
+class mediaImage : public labeledItem
 {
     ofImage item;
     DataPoint<ofImage> datapoint;
 
 public:
 
-    explicit mediaImage(DataPoint<ofImage> data) : mediaItem(MediaType::IMAGE), datapoint(data){
+    explicit mediaImage(DataPoint<ofImage> data, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::IMAGE, label, init, frozen), datapoint(data){
 
         item = data.loadMedia();
         if (!item.isAllocated()) {
@@ -222,6 +249,9 @@ public:
         if (item.isAllocated())
 
             item.draw(box.getLeft(), box.getTop(), start_w * display_size, start_h * display_size);
+
+        labeledItem::draw();
+
     }
     void draw(const float x,const  float y,const  float w,const  float h) override
     {
@@ -230,7 +260,10 @@ public:
         item.draw(x, y, w, h);
     }
 
-    void update() override{};
+    void update() override {
+        update_gui_pos();
+
+    };
 
 
     void drawMetadata(const float x,const  float y,const  float w,const  float h) override {

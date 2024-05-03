@@ -98,6 +98,8 @@ public:
         return "";
     }
 
+    virtual void reset_label(){};
+
 
 
 };

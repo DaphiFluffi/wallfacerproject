@@ -408,7 +408,7 @@ public:
 
             std::cout << "Adding Image" << img.data.filePath << std::endl;
 
-            auto media_item = std::make_unique<mediaImage>(img.data);
+            auto media_item = std::make_unique<mediaImage>(img.data, "Score", to_string(img.score), true);
             //media_item->score = img.score;
             addItem(std::move(media_item));
 
@@ -459,7 +459,6 @@ public:
         {
             methods[i].set(i+1 == static_cast<int>(active_metric));
 
-            std::cout << "i " << 0 << " " << methods[i] << "mode "  << (int) active_mode << "metric " << (int) active_metric << endl;
 
         };
 
@@ -572,7 +571,10 @@ public:
     void addToGridAbove(std::unique_ptr<mediaItem> item) {
 
         if (windows.size() >= 2) {
-            auto second_last_grid = (*(windows.end() - 2))->getGrid(); 
+            auto second_last_grid = (*(windows.end() - 2))->getGrid();
+
+            item->reset_label();
+
             second_last_grid->addItem(std::move(item));
         }
         else {
