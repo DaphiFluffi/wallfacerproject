@@ -3,17 +3,17 @@
 #include "ofMain.h"
 #include "ofxCvHaarFinder.h"
 #include "ofxOpenCv.h"
+#include "CV_Stuff.h"
 
 class cameraManager
 {
 
     ofVideoGrabber vidGrabber;
     ofImage img;
-    ofxCvHaarFinder finder;
     int camWidth, camHeight;
     int detect_every_n;
     int steps;
-    int thresh; 
+    int thresh;
     vector<ofRectangle> faces;
 
 
@@ -28,7 +28,8 @@ public:
 
     cameraManager(int width, int height, int det_every_n = 10, int threshold = 80) 
         : camWidth(width), camHeight(height), steps(0), 
-        detect_every_n(det_every_n), thresh(threshold){};
+        detect_every_n(det_every_n), thresh(threshold) {
+    };
 
     void setup()
     {
@@ -55,7 +56,6 @@ public:
         vidGrabber.setup(camWidth, camHeight);
         ofSetVerticalSync(true);
 
-        finder.setup("haarcascade_frontalface_default.xml");
 
         colorImg.allocate(camWidth, camHeight);
         grayImage.allocate(camWidth, camHeight);
@@ -75,13 +75,7 @@ public:
 
         if(steps % detect_every_n == 0){
 
-            finder.findHaarObjects(pixels);
-
-
-            faces.clear();
-            for(unsigned int i = 0; i < finder.blobs.size(); i++) {
-                faces.push_back(finder.blobs[i].boundingRect);
-            }
+            faces = FaceFinder::getInstance().detect_faces(pixels);
         };
         
         colorImg.setFromPixels(pixels);

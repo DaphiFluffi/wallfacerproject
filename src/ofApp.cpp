@@ -11,17 +11,17 @@ void ofApp::setup()
     // add base window
     state_manager.addWindow(std::move(std::make_unique<DisplayWindow>(&baseGrid)));
 
-
+    // ------------- general setups ----------------
     cam_manager.setup();
     image_io_manager.setup();
     video_io_manager.setup();
-
-
     fontManager& font_manager = fontManager::getInstance();
-
+    FaceFinder::getInstance().setup();
     font_manager.setup(12, 20);
+    SearchManager::getInstance().setup(&image_io_manager, &video_io_manager);
 
-    // fill grid 
+
+    // ------------- fill grid -------------
     for (int i = 0; i < std::min(static_cast<int>(image_io_manager.size()), 12); i++)
     {
         auto img = std::make_unique<mediaImage>(image_io_manager.getData(i)); 
@@ -39,8 +39,6 @@ void ofApp::setup()
     auto vid = std::make_unique<mediaVideo>(video_io_manager.getData(0)); 
     baseGrid.addItem(std::move(vid));
 
-
-
     auto feed = std::make_unique<mediaFeed<cameraManager>>(cam_manager);
     baseGrid.addItem(std::move(feed));
     
@@ -51,6 +49,8 @@ void ofApp::setup()
     auto diff_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayDiff);
     baseGrid.addItem(std::move(diff_feed));
 
+    // ------------- generate metadata -------------
+
     if (cmdArgs.find("--gmd") != cmdArgs.end())
     {
         std::cout << "Generating metadata" << std::endl;
@@ -59,14 +59,12 @@ void ofApp::setup()
         video_io_manager.updateMetadata();
     }
 
-    SearchManager::getInstance().setup(&image_io_manager, &video_io_manager);
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update()
 {
-
     cam_manager.update();
     state_manager.update();
 }

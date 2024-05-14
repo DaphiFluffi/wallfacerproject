@@ -1,2 +1,6 @@
+ofxGui
+ofxGui
 ofxOpenCv
+ofxOpenCv
+ofxXmlSettings
 ofxXmlSettings

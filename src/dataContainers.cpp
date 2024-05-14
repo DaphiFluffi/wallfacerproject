@@ -49,6 +49,7 @@ std::optional<std::string> Metadata::getOptionalStringValue(const std::string &t
     return std::nullopt;
 }
 
+// loading metadata from file
 Metadata::Metadata(const std::string &filepath)
 {
 
@@ -76,6 +77,7 @@ Metadata::Metadata(const std::string &filepath)
 
     brightness = getOptionalDoubleValue("brightness");
 
+    n_faces = getOptionalIntValue("nfaces");
 
     // load color histograms
     if (!settings.tagExists("color_histograms"))
@@ -121,6 +123,12 @@ void Metadata::save(const std::string &filepath)
         write_settings.setValue("brightness", brightness.value());
     }
 
+    if (n_faces.has_value()) {
+        write_settings.setValue("nfaces", n_faces.value());
+
+    }
+
+    // ------------- save color histograms ----------------
     write_settings.addTag("color_histograms");
     write_settings.pushTag("color_histograms");
 
@@ -148,6 +156,10 @@ void Metadata::save(const std::string &filepath)
         }
     }
     write_settings.popTag();
+    // ---------------------------------------------------
+
+
+
 
     // pop metadata tag at the end
     write_settings.popTag();
@@ -211,7 +223,13 @@ void  Metadata::draw(float x, float y, float w, float h){
         textY += regularFont.getLineHeight();
     }
 
+    if (n_faces.has_value()) {
+        string n_faces_str = "Number of faces: " + ofToString(n_faces.value());
+        regularFont.drawString(n_faces_str, x + 10, textY);
+        textY += regularFont.getLineHeight();
+    }
 
+    // ---------- Draw color histograms ------------
     if (redHist.has_value() && blueHist.has_value() && greenHist.has_value()){
 
         textY += 40;

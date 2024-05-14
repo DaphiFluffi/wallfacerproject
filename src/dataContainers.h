@@ -10,10 +10,12 @@
 
 struct Metadata {
     std::optional<std::string> description = std::nullopt;
-    std::optional<float> brightness = std::nullopt;;
+    std::optional<float> brightness = std::nullopt;
     std::optional<vector<float>> redHist = std::nullopt;
     std::optional<vector<float>> greenHist = std::nullopt;
     std::optional<vector<float>> blueHist = std::nullopt;
+    std::optional<int> n_faces = std::nullopt;
+
     ofxXmlSettings settings;
 
 

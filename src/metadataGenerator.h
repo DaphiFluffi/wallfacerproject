@@ -1,7 +1,8 @@
 #pragma once
 
 #include "dataContainers.h"
-#include <opencv2/opencv.hpp>  
+#include "CV_Stuff.h"
+#include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 #include <tuple>
@@ -29,7 +30,8 @@ void metadataGenerator::updateMetadata(DataPoint<MediaType>& dataPoint) {
 
     ofxCvColorImage cvImage = dataPoint.getOFCVImage();
 
-    IplImage* iplImg = cvImage.getCvImage();  // Gets the IplImage*
+
+    IplImage* iplImg = cvImage.getCvImage();
 
     // Convert IplImage* to cv::Mat
     cv::Mat colorMat = cv::cvarrToMat(iplImg);  // Use cvarrToMat to convert
@@ -46,6 +48,8 @@ void metadataGenerator::updateMetadata(DataPoint<MediaType>& dataPoint) {
     dataPoint.metadata.blueHist = blueHist;
     dataPoint.metadata.greenHist = greenHist;
 
+    dataPoint.metadata.n_faces = static_cast<int>(FaceFinder::getInstance().detect_faces(cvImage.getPixels()).size());
+    std::cout << "faces: " << dataPoint.metadata.n_faces.value() << endl;
 
     // save changes
     dataPoint.metadata.save(dataPoint.metadataPath);

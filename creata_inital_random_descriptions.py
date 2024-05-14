@@ -34,7 +34,7 @@ def generate_xml_metadata(file_path):
     xml_file_path = os.path.splitext(file_path)[0] + ".xml"
     tree.write(xml_file_path)
 
-image_files = glob.glob("bin/data/images/*.jpg")
+image_files = glob.glob("bin/data/images/*.jpg") + glob.glob("bin/data/images/*.png")
 video_files = glob.glob("bin/data/videos/*.mp4")
 
 for file_path in image_files + video_files:
