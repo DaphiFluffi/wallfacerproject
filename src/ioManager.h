@@ -74,17 +74,21 @@ public:
         std::cout << "Directory: " << dir.path() << std::endl;
     }
 
-    DataPoint<MediaType>& getData(size_t index) {
+    DataPoint<MediaType>* getData(size_t index) {
         if (index >= mediaPoints.size()) {
             throw std::out_of_range("Index out of range");
         }
-        return mediaPoints[index];
+        return &(mediaPoints[index]);
     }
 
     std::vector<DataPoint<MediaType>>& getData() {
         return mediaPoints;
     }
 
+    DataPoint<MediaType>* add_data(DataPoint<MediaType> data) {
+        mediaPoints.push_back(data);
+        return &(mediaPoints.back());
+    };
 
     size_t size() const {
         return mediaPoints.size();

@@ -13,6 +13,15 @@
 #include "utils.h"
 #include "ofxGui.h"
 #include "searchManager.h"
+#include "ioManager.h"
+#include "cameraManager.h"
+#include "metadataGenerator.h"
+#include "utils.h"
+#include <iostream>
+#include <chrono>
+#include <iomanip>
+#include <ctime>
+
 
 enum class StateNames
 {
@@ -351,8 +360,8 @@ class searchGrid : public mediaGrid {
 
 public:
 
-    searchGrid(mediaItem* it): item(it),
-        mediaGrid(3, 3, 30, 300) {
+    searchGrid(mediaItem* it):
+        mediaGrid(3, 3, 30, 300), item(it) {
 
         mode_settings.setName("Search By");
         mode_settings.add(modes[0].set("Brightness", true));
@@ -378,6 +387,7 @@ public:
         panel.setPosition(left_middle - panel.getWidth()/2,100);
 
         auto box = item->get_bounding_box(larger_size);
+
         item->current_x = left_middle - box.width/2;
         item->current_y = 400;
 
@@ -399,17 +409,17 @@ public:
     };
 
     void search_and_fill() {
-        auto imgs = search_manager.search_imgs(item, active_mode, active_metric, 4);
+        auto imgs = search_manager.search_imgs(item, active_mode, active_metric, 20);
 
-        std::cout << "First Image" << imgs[0].data.filePath << std::endl;
+
+        auto& img_manager = *search_manager.image_io_manager;
 
         clear();
         for (auto& img : imgs) {
 
-            std::cout << "Adding Image" << img.data.filePath << std::endl;
+            auto* data = img_manager.getData(img.index);
 
-            auto media_item = std::make_unique<mediaImage>(img.data, "Score", to_string(img.score), true);
-            //media_item->score = img.score;
+            auto media_item = std::make_unique<mediaImage>(data, "Score", to_string(img.score), true);
             addItem(std::move(media_item));
 
         }
@@ -420,6 +430,8 @@ public:
 
     void update()
     {
+
+        item->update();
 
         bool serchModeChanged = false;
 
@@ -521,19 +533,53 @@ private:
     std::deque<std::unique_ptr<DisplayWindow>> windows;
     mediaGrid *current_grid = nullptr;
     std::unique_ptr<State> state = nullptr;
+    cameraManager& cam_manager;
 
-    StateManager() {
+    StateManager(ioManager<ofImage>& image_io_manager, cameraManager& cam_manager) : image_io_manager(image_io_manager), cam_manager(cam_manager){
 
     };
 public:
+    ioManager<ofImage>& image_io_manager;
 
 
+    static StateManager* instance;
     StateManager(const StateManager&) = delete;
     StateManager& operator=(const StateManager&) = delete;
     static StateManager& getInstance() {
-        static StateManager instance;
-        return instance;
+        if (!instance) {
+            throw runtime_error("state manager must first be initialized with ioManager and cameraManager");
+        }
+        return *instance;
     }
+
+    void addCamFrame() {
+        auto cvimg = cam_manager.get_frame();
+
+
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        std::tm* now_tm = std::localtime(&in_time_t);
+        std::stringstream ss;
+        ss << std::put_time(now_tm, "%H:%M:%S");
+        std::string time_str = ss.str();
+        Metadata metadata = compute_metatada(cvimg);
+
+        DataPoint<ofImage>* ptr = image_io_manager.add_data(DataPoint<ofImage>(CV_to_ofImage(cvimg), metadata, time_str));
+
+
+        auto new_item = std::make_unique<mediaImage>(ptr, "Camera Frame", time_str, true);
+        current_grid = windows.back()->getGrid();
+        current_grid->addItem(std::move(new_item));
+    };
+
+
+    static StateManager& getInstance(ioManager<ofImage>& img_io, cameraManager& cam) {
+        if (!instance) {
+            instance = new StateManager(img_io, cam);
+        }
+        return *instance;
+    }
+
 
     void addWindow(std::unique_ptr<DisplayWindow> window) {
         window->level = static_cast<int>(windows.size());

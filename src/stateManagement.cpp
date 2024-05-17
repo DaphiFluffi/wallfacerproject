@@ -131,6 +131,11 @@ bool StateManager::keyPressed(int key) {
             std::cout << "Moving out of Window" << std::endl;
             popWindow();
             return true;
+        case 'p':
+            std::cout << "Saving Image" << std::endl;
+            addCamFrame();
+            return true;
+
         default:
             return false;
     }
@@ -292,3 +297,5 @@ unique_ptr<State> ItemMenuState::move_to_new_state(){
 
     return nullptr;
 };
+
+StateManager* StateManager::instance = nullptr;

@@ -157,14 +157,14 @@ public:
 class mediaVideo : public labeledItem
 {
     ofVideoPlayer item;
-    DataPoint<ofVideoPlayer>& datapoint;
+    DataPoint<ofVideoPlayer>* dataptr;
     bool active = true;
 
 
 public:
-    mediaVideo(DataPoint<ofVideoPlayer>& data, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::VIDEO, label, init, frozen), datapoint(data){
+    mediaVideo(DataPoint<ofVideoPlayer>* ptr, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::VIDEO, label, init, frozen), dataptr(ptr){
 
-        item = data.loadMedia();
+        item = *dataptr->getData();
         item.setLoopState(OF_LOOP_NORMAL);
         item.play();
 
@@ -213,29 +213,32 @@ public:
     
     void drawMetadata(const float x,const  float y,const  float w,const  float h) override {
 
-        datapoint.metadata.draw(x, y, w, h);
+        dataptr->metadata.draw(x, y, w, h);
     };
 
     virtual const Metadata* getMetaData() {
-        return &datapoint.metadata;
+        return &(dataptr->metadata);
     }
     std::string getId() {
-        return datapoint.filePath;
+        return dataptr->filePath;
     }
 };
 
 class mediaImage : public labeledItem
 {
     ofImage item;
-    DataPoint<ofImage> datapoint;
+    DataPoint<ofImage>* dataptr;
 
 public:
 
-    explicit mediaImage(DataPoint<ofImage> data, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::IMAGE, label, init, frozen), datapoint(data){
 
-        item = data.loadMedia();
+
+    explicit mediaImage(DataPoint<ofImage>* ptr, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::IMAGE, label, init, frozen), dataptr(ptr){
+
+        item = *dataptr->getData();
+
         if (!item.isAllocated()) {
-            std::cerr << "could not load image " << data.filePath << std::endl;
+            std::cerr << "could not load image " << dataptr->filePath << std::endl;
         }
     };
 
@@ -269,15 +272,15 @@ public:
     void drawMetadata(const float x,const  float y,const  float w,const  float h) override {
         if (item.isAllocated())
 
-        datapoint.metadata.draw(x, y, w, h);
+        dataptr->metadata.draw(x, y, w, h);
     };
 
     const Metadata* getMetaData() {
-        return &(datapoint.metadata);
+        return &(dataptr->metadata);
     }
 
     std::string getId() {
-        return datapoint.filePath;
+        return dataptr->filePath;
     }
 };
 

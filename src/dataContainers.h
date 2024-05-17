@@ -8,6 +8,7 @@
 #include "ofxXmlSettings.h"
 #include "ofxCvColorImage.h"
 
+
 struct Metadata {
     std::optional<std::string> description = std::nullopt;
     std::optional<float> brightness = std::nullopt;
@@ -31,28 +32,48 @@ struct Metadata {
 
     void draw(float x, float y, float w, float h);
 
-    
-};
 
+};
 
 template<typename MediaType>
 struct DataPoint {
+    private:
+        bool loaded = false;
+    public:
+
     std::string filePath;
     std::string metadataPath;
+    MediaType data;  // Direct storage of MediaType object
 
     Metadata metadata;
 
+    DataPoint() = default;
+
+
+    // Constructor to initialize with MediaType and metadata
+    DataPoint(MediaType media, Metadata metadata, std::string time)
+        : metadata(metadata), data(std::move(media)) {
+        metadataPath = "camera_image_"+ time;
+        filePath = "camera_image_"+ time;
+        loaded = true;
+    }
+
     MediaType loadMedia() {
         MediaType media;
-        media.load(filePath); 
+        media.load(filePath);
         return media;
     }
 
+    MediaType* getData() {
+        if (!loaded) {
+            data = loadMedia();
+            loaded = true;
+        }
+        return &data;
+    }
 
     ofxCvColorImage getOFCVImage();
 };
-
-
 
 
 template<>

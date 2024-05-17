@@ -2,6 +2,7 @@
 
 #include "dataContainers.h"
 #include "fontManager.h"
+#include "utils.h"
 
 std::optional<int> Metadata::getOptionalIntValue(const std::string &tag, int which)
 {
@@ -276,30 +277,27 @@ void  Metadata::draw(float x, float y, float w, float h){
 };
 
 
+
 template <>
 ofxCvColorImage DataPoint<ofImage>::getOFCVImage()
 {
-    ofImage img = loadMedia();
-
-    ofxCvColorImage ofcv_img;
-    ofcv_img.allocate(img.getWidth(), img.getHeight());
-    ofcv_img.setFromPixels(img.getPixels());
-    return ofcv_img;
+    ofImage* img = getData();
+    return ofImage_to_CV(*img);
 }
 
 template <>
 ofxCvColorImage DataPoint<ofVideoPlayer>::getOFCVImage()
 {
-    ofVideoPlayer vid = loadMedia();
+    ofVideoPlayer* vid = getData();
 
-    vid.setLoopState(OF_LOOP_NORMAL);
-    vid.play();
-    vid.update();
-    vid.setFrame(1);
-    vid.update();
+    vid->setLoopState(OF_LOOP_NORMAL);
+    vid->play();
+    vid->update();
+    vid->setFrame(1);
+    vid->update();
 
     ofxCvColorImage ofcv_img;
-    ofcv_img.allocate(vid.getWidth(), vid.getHeight());
-    ofcv_img.setFromPixels(vid.getPixels());
+    ofcv_img.allocate(vid->getWidth(), vid->getHeight());
+    ofcv_img.setFromPixels(vid->getPixels());
     return ofcv_img;
 }

@@ -17,18 +17,18 @@
 
 template <typename MediaType>
 struct SearchResult {
-    DataPoint<MediaType> data;
+    size_t index;
     float score;
 
 };
 class SearchManager {
 private:
-    ioManager<ofImage>* image_io_manager = nullptr;
-    ioManager<ofVideoPlayer>* video_io_manager = nullptr;
 
     SearchManager() = default;
 
 public:
+    ioManager<ofImage>* image_io_manager = nullptr;
+    ioManager<ofVideoPlayer>* video_io_manager = nullptr;
     SearchManager(const SearchManager&) = delete;
     SearchManager& operator=(const SearchManager&) = delete;
 
@@ -77,21 +77,18 @@ public:
             }
 
             float score = score_func(mode, metric, goal, data[i].metadata);
-            results.push_back(SearchResult<ofImage>{data[i], score});
+            results.push_back(SearchResult<ofImage>{i, score});
         }
 
         std::sort(results.begin(), results.end(), [metric](const SearchResult<ofImage>& a, const SearchResult<ofImage>& b) {
                     return (metric == distanceMetrics::COS_SIMILARITY) ? (a.score > b.score) : (a.score < b.score);
                 });
 
-        std::cout << "result path" <<  results[0].data.filePath << std::endl;
-
 
         if (max_samples > 0 && max_samples < static_cast<int>( results.size())) {
             results.resize(max_samples);
         }
 
-        std::cout << "result path2" <<  results[0].data.filePath << std::endl;
 
         return results;
     };
@@ -122,7 +119,7 @@ public:
                 continue;
             }
             float score = score_func(mode, metric, goal, data[i].metadata);
-            results.push_back(SearchResult<ofVideoPlayer>{data[i], score});
+            results.push_back(SearchResult<ofVideoPlayer>{i, score});
         }
 
         std::sort(results.begin(), results.end(), [metric](const SearchResult<ofVideoPlayer>& a, const SearchResult<ofVideoPlayer>& b) {

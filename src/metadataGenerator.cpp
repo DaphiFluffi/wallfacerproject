@@ -3,15 +3,43 @@
 
 
 
-float metadataGenerator::calculateBrightness(const cv::Mat& crayMat) {
+float calculateBrightness(const cv::Mat& crayMat) {
 
     cv::Scalar meanBrightness = cv::mean(crayMat);
     return static_cast<float>(meanBrightness[0]);  
 }
 
+Metadata compute_metatada(ofxCvColorImage& cvImage) {
+
+    Metadata metadata;
+
+    cvImage.resize(256, 256);
+    IplImage* iplImg = cvImage.getCvImage();
+
+    // Convert IplImage* to cv::Mat
+    cv::Mat colorMat = cv::cvarrToMat(iplImg);  // Use cvarrToMat to convert
+    cv::Mat grayMat;
+    cv::cvtColor(colorMat, grayMat, cv::COLOR_RGB2GRAY);
+
+    metadata.brightness = calculateBrightness(grayMat);
+    std::cout << "computed brightness " << metadata.brightness.value() << std::endl;
 
 
-std::tuple<std::vector<float>, std::vector<float>, std::vector<float>> metadataGenerator::computeColorHistogram(const cv::Mat& image) {
+    auto [redHist, greenHist, blueHist] = computeColorHistogram(colorMat);
+
+    metadata.redHist = redHist;
+    metadata.blueHist = blueHist;
+    metadata.greenHist = greenHist;
+
+    metadata.n_faces = static_cast<int>(FaceFinder::getInstance().detect_faces(cvImage.getPixels()).size());
+    std::cout << "faces: " << metadata.n_faces.value() << endl;
+
+    return metadata;
+};
+
+
+
+std::tuple<std::vector<float>, std::vector<float>, std::vector<float>> computeColorHistogram(const cv::Mat& image) {
     // Histogram parameters
     int histSize = 256; // Number of bins
     float range[] = { 0, 256 };

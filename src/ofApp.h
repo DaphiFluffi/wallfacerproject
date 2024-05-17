@@ -36,9 +36,9 @@ public:
 	mediaGrid baseGrid = mediaGrid(6, 3, 40, 270);
 
 
-	StateManager& state_manager = StateManager::getInstance();
-
 	cameraManager cam_manager = cameraManager(640, 480);
+	StateManager& state_manager = StateManager::getInstance(image_io_manager, cam_manager);
+
 
 	std::map<std::string, bool> cmdArgs;
 };

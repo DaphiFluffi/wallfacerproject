@@ -8,13 +8,17 @@ void ofApp::setup()
 {
     ofBackground(255, 255, 255);
 
-    // add base window
-    state_manager.addWindow(std::move(std::make_unique<DisplayWindow>(&baseGrid)));
 
     // ------------- general setups ----------------
     cam_manager.setup();
     image_io_manager.setup();
     video_io_manager.setup();
+
+
+    // add base window
+    state_manager.addWindow(std::move(std::make_unique<DisplayWindow>(&baseGrid)));
+
+
     fontManager& font_manager = fontManager::getInstance();
     FaceFinder::getInstance().setup();
     font_manager.setup(12, 20);

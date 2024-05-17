@@ -21,6 +21,8 @@ class cameraManager
     ofxCvGrayscaleImage grayImage;
     ofxCvContourFinder 	contourFinder;
 
+    ofPixels pixels;
+
 public:
     ofxCvGrayscaleImage grayBg;
     ofxCvGrayscaleImage grayDiff;
@@ -68,10 +70,14 @@ public:
         grayBg = grayImage;
     };
 
+    ofxCvColorImage get_frame() {
+        return colorImg;
+    }
+
 
     void update(){
         vidGrabber.update();
-        ofPixels& pixels = vidGrabber.getPixels();
+        ofPixels pixels = vidGrabber.getPixels();
 
         if(steps % detect_every_n == 0){
 
