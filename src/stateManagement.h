@@ -562,8 +562,7 @@ public:
         std::stringstream ss;
         ss << std::put_time(now_tm, "%H:%M:%S");
         std::string time_str = ss.str();
-        Metadata metadata = compute_metatada(cvimg);
-
+        Metadata metadata = metadataGenerator::getInstance().compute_metatada(cvimg, "");
         DataPoint<ofImage>* ptr = image_io_manager.add_data(DataPoint<ofImage>(CV_to_ofImage(cvimg), metadata, time_str));
 
 

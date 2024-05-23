@@ -4,15 +4,12 @@
 #include "ofMain.h"
 #include <string>
 #include <vector>
-#include <optional>
 #include "ofxXmlSettings.h"
-#include "metadataGenerator.h"
 #include "dataContainers.h"
 
 
 inline std::string get_metadata_path(const string& filepath){
-
-    return ofFilePath::removeExt(filepath) + ".xml";  
+    return ofFilePath::removeExt(filepath) + ".xml";
 };
 
 
@@ -31,7 +28,6 @@ private:
     std::string directory;
     std::vector<std::string> extensions;
 
-    metadataGenerator metadataGen;
 
 public:
     ioManager(const std::string& dir, const std::vector<std::string>& extens): directory(dir), extensions(extens) {
@@ -94,10 +90,13 @@ public:
         return mediaPoints.size();
     }
 
-    void updateMetadata() {
-
-        for (auto& data : mediaPoints) {
-            metadataGen.updateMetadata(data);
-        }
-    }
+    void updateMetadata();
 };
+
+
+template<>
+void ioManager<ofImage>::updateMetadata();
+
+template<>
+void ioManager<ofVideoPlayer>::updateMetadata();
+

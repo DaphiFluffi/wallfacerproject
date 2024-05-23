@@ -41,6 +41,21 @@ std::optional<vector<float>> Metadata::getOptionalDoubleVecValue(const std::stri
     return vec;
 }
 
+std::optional<vector<std::string>> Metadata::getOptionalStringVecValue(const std::string& tag) {
+    vector<std::string> vec;
+
+    int i = 0;
+
+    while (settings.tagExists(tag, i)) {
+        vec.push_back(settings.getValue(tag, "", i));
+        i++;
+    }
+
+    return vec;
+
+};
+
+
 std::optional<std::string> Metadata::getOptionalStringValue(const std::string &tag, int which)
 {
     if (settings.tagExists(tag, which))
@@ -49,6 +64,18 @@ std::optional<std::string> Metadata::getOptionalStringValue(const std::string &t
     }
     return std::nullopt;
 }
+
+
+std::optional<std::string> get_description(std::string metada_path) {
+    ofxXmlSettings settings;
+    settings.load(metada_path);
+
+    settings.pushTag("metadata");
+    if (!settings.tagExists("description", 0)) return std::nullopt;
+
+    return settings.getValue("description", "", 0);
+};
+
 
 // loading metadata from file
 Metadata::Metadata(const std::string &filepath)
@@ -70,21 +97,36 @@ Metadata::Metadata(const std::string &filepath)
     {
         cerr << "Description not found in metadata file" << endl;
     }
-    else
-    {
-
-        std::cout << "Loaded metadata " << description.value() << std::endl;
-    }
 
     brightness = getOptionalDoubleValue("brightness");
 
     n_faces = getOptionalIntValue("nfaces");
+
+    edgeHist = getOptionalDoubleVecValue("edgeHist", 64*5);
+
+    if(!edgeHist) {
+        cerr << "Edge histograms not found in metadata file" << endl;
+    }
+
+    textureHist = getOptionalDoubleVecValue("textureHist", 64);
+
+    if(!textureHist) {
+        cerr << "texture histograms not found in metadata file" << endl;
+    }
+
+    objects = getOptionalStringVecValue("objects");
+
+    if(!objects) {
+        cerr << "objects histograms not found in metadata file" << endl;
+    } else
 
     // load color histograms
     if (!settings.tagExists("color_histograms"))
     {
         cerr << "color histograms not found " << endl;
     }
+
+
 
     settings.pushTag("color_histograms");
     redHist = getOptionalDoubleVecValue("redHist", 256);
@@ -95,12 +137,10 @@ Metadata::Metadata(const std::string &filepath)
     {
         cerr << "Color histograms not found in metadata file" << endl;
     }
-    else
-    {
-        std::cout << "Loaded color histograms "  << std::endl;
-    }
+
     settings.popTag();
-    
+
+
 
     settings.popTag();
 };
@@ -110,7 +150,6 @@ void Metadata::save(const std::string &filepath)
 
     ofxXmlSettings write_settings;
 
-    std::cout << "save called" << std::endl;
 
     write_settings.addTag("metadata");
     write_settings.pushTag("metadata");
@@ -156,11 +195,33 @@ void Metadata::save(const std::string &filepath)
             write_settings.setValue("blueHist", blueHist.value()[i], i);
         }
     }
+
     write_settings.popTag();
     // ---------------------------------------------------
 
+    if (edgeHist.has_value())
+    {
+        for (int i = 0; i < edgeHist.value().size(); i++)
+        {
+            write_settings.setValue("edgeHist", edgeHist.value()[i], i);
+        }
+    }
 
+    if (textureHist.has_value())
+    {
+        for (int i = 0; i < textureHist.value().size(); i++)
+        {
+            write_settings.setValue("textureHist", textureHist.value()[i], i);
+        }
+    }
 
+    if (objects.has_value())
+    {
+        for (int i = 0; i < objects.value().size(); i++)
+        {
+            write_settings.setValue("objects", objects.value()[i], i);
+        }
+    }
 
     // pop metadata tag at the end
     write_settings.popTag();
@@ -230,6 +291,26 @@ void  Metadata::draw(float x, float y, float w, float h){
         textY += regularFont.getLineHeight();
     }
 
+    if (objects.has_value()) {
+
+        if (objects.value().size()) {
+
+        string f = "Matched objects:";
+        for (const auto& s : objects.value()) {
+            f += "\n\t\t-" + s;
+        }
+        regularFont.drawString(f, x + 10, textY);
+
+        textY += regularFont.getLineHeight() * (objects->size() + 1);
+
+        }else {
+            regularFont.drawString("No objects matched.", x + 10, textY);
+            textY += regularFont.getLineHeight();
+        }
+
+    }
+
+
     // ---------- Draw color histograms ------------
     if (redHist.has_value() && blueHist.has_value() && greenHist.has_value()){
 
@@ -238,10 +319,10 @@ void  Metadata::draw(float x, float y, float w, float h){
         title = "Color Histograms";
         titleWidth = regularFont.stringWidth(title);
         regularFont.drawString(title, x + (w - titleWidth) / 2, textY);
-        textY += 2; 
-        
-        float histHeight = 100; 
-        float binWidth = w / 256; 
+        textY += 2;
+
+        float histHeight = 100;
+        float binWidth = w / 256;
 
         float max_val = std::max({
             *std::max_element(redHist.value().begin(), redHist.value().end()),
@@ -258,7 +339,7 @@ void  Metadata::draw(float x, float y, float w, float h){
                     ofDrawLine(x + binWidth * (i - 1), prevVal, x + binWidth * i, currentVal);
                     prevVal = currentVal;
                 }
-                
+
             }
         };
 
@@ -273,7 +354,93 @@ void  Metadata::draw(float x, float y, float w, float h){
         drawHistogram(blueHist, ofColor(0, 0, 255), textY);
 
         textY += 20;
+
+        ofSetColor(ofColor(0));
+
+
     };
+
+    if (edgeHist.has_value()) {
+
+        textY += 40;
+
+        title = "Edge Histograms";
+        titleWidth = regularFont.stringWidth(title);
+        regularFont.drawString(title, x + (w - titleWidth) / 2, textY);
+        textY += 2;
+
+        float histHeight = 100;
+        float binWidth = w / edgeHist.value().size();
+
+        float max_val = *std::max_element(edgeHist.value().begin(), edgeHist.value().end());
+
+        auto drawHistogram = [&](const std::optional<std::vector<float>>& hist, ofColor color, float& posY) {
+            if (hist.has_value()) {
+                ofSetColor(color);
+                float prevVal = posY - hist->at(0) * histHeight/ max_val;
+                for (size_t i = 1; i < hist->size(); i++) {
+                    float currentVal = posY - hist->at(i) * histHeight / max_val;
+                    ofDrawLine(x + binWidth * (i - 1), prevVal, x + binWidth * i, currentVal);
+                    prevVal = currentVal;
+                }
+
+            }
+        };
+
+        ofNoFill();
+        ofDrawRectangle(x, textY, w, histHeight);
+        ofFill();
+
+        textY += histHeight;
+
+        drawHistogram(edgeHist, ofColor(0), textY);
+
+        textY += 20;
+
+        ofSetColor(ofColor(0));
+
+    }
+
+    if (textureHist.has_value()) {
+
+        textY += 40;
+
+        title = "Texture Histograms";
+        titleWidth = regularFont.stringWidth(title);
+        regularFont.drawString(title, x + (w - titleWidth) / 2, textY);
+        textY += 2;
+
+        float histHeight = 100;
+        float binWidth = w / textureHist.value().size();
+
+        float max_val = *std::max_element(textureHist.value().begin(), textureHist.value().end());
+
+        auto drawHistogram = [&](const std::optional<std::vector<float>>& hist, ofColor color, float& posY) {
+            if (hist.has_value()) {
+                ofSetColor(color);
+                float prevVal = posY - hist->at(0) * histHeight/ max_val;
+                for (size_t i = 1; i < hist->size(); i++) {
+                    float currentVal = posY - hist->at(i) * histHeight / max_val;
+                    ofDrawLine(x + binWidth * (i - 1), prevVal, x + binWidth * i, currentVal);
+                    prevVal = currentVal;
+                }
+
+            }
+        };
+
+        ofNoFill();
+        ofDrawRectangle(x, textY, w, histHeight);
+        ofFill();
+
+        textY += histHeight;
+
+        drawHistogram(textureHist, ofColor(0), textY);
+
+        textY += 20;
+
+        ofSetColor(ofColor(0));
+
+    }
 };
 
 

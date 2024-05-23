@@ -9,9 +9,12 @@ float calculateBrightness(const cv::Mat& crayMat) {
     return static_cast<float>(meanBrightness[0]);  
 }
 
-Metadata compute_metatada(ofxCvColorImage& cvImage) {
+Metadata metadataGenerator::compute_metatada(ofxCvColorImage& cvImage, std::string original_path) {
 
     Metadata metadata;
+
+    if (original_path != "")
+        metadata.description = get_description(original_path);
 
     cvImage.resize(256, 256);
     IplImage* iplImg = cvImage.getCvImage();
@@ -22,7 +25,6 @@ Metadata compute_metatada(ofxCvColorImage& cvImage) {
     cv::cvtColor(colorMat, grayMat, cv::COLOR_RGB2GRAY);
 
     metadata.brightness = calculateBrightness(grayMat);
-    std::cout << "computed brightness " << metadata.brightness.value() << std::endl;
 
 
     auto [redHist, greenHist, blueHist] = computeColorHistogram(colorMat);
@@ -31,8 +33,11 @@ Metadata compute_metatada(ofxCvColorImage& cvImage) {
     metadata.blueHist = blueHist;
     metadata.greenHist = greenHist;
 
-    metadata.n_faces = static_cast<int>(FaceFinder::getInstance().detect_faces(cvImage.getPixels()).size());
-    std::cout << "faces: " << metadata.n_faces.value() << endl;
+    metadata.n_faces = static_cast<int>(faceFinder.detect_faces(cvImage.getPixels()).size());
+
+    metadata.edgeHist = edgeHistogramComputer.computeEdgeHistogram(grayMat);
+    metadata.textureHist = textureHistogramComputer.computeTextureHistogram(grayMat);
+    metadata.objects = surf_computer.getObjects(colorMat);
 
     return metadata;
 };

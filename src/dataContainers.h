@@ -9,6 +9,9 @@
 #include "ofxCvColorImage.h"
 
 
+std::optional<std::string> get_description(std::string metada_path);
+
+
 struct Metadata {
     std::optional<std::string> description = std::nullopt;
     std::optional<float> brightness = std::nullopt;
@@ -16,7 +19,9 @@ struct Metadata {
     std::optional<vector<float>> greenHist = std::nullopt;
     std::optional<vector<float>> blueHist = std::nullopt;
     std::optional<int> n_faces = std::nullopt;
-
+    std::optional<vector<float>> edgeHist = std::nullopt;
+    std::optional<vector<float>> textureHist = std::nullopt;
+    std::optional<vector<std::string>> objects = std::nullopt;
     ofxXmlSettings settings;
 
 
@@ -24,6 +29,7 @@ struct Metadata {
     std::optional<double> getOptionalDoubleValue(const std::string& tag, int which = 0);
     std::optional<std::string> getOptionalStringValue(const std::string& tag, int which = 0);
     std::optional<vector<float>> getOptionalDoubleVecValue(const std::string &tag, int size);
+    std::optional<vector<std::string>> getOptionalStringVecValue(const std::string& tag);
 
     Metadata() = default;
     Metadata(const std::string& filepath);

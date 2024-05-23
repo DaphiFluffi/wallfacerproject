@@ -3,6 +3,23 @@
 //
 #include "utils.h"
 
+
+
+ofxCvColorImage ofImage_to_CV(ofImage& img){
+    ofxCvColorImage colorImg;
+    colorImg.allocate(img.getWidth(), img.getHeight());
+    colorImg.setFromPixels(img.getPixels());
+    return colorImg;
+};
+
+ofImage CV_to_ofImage(ofxCvColorImage& img)
+{
+    ofImage ofImg;
+    ofImg.allocate(img.getWidth(), img.getHeight(), OF_IMAGE_COLOR);
+    ofImg.setFromPixels(img.getPixels());
+    return ofImg;
+};
+
 tuple<float,float,float,float> get_centerted_box(float aspectRatio){
     int screenWidth = ofGetWindowWidth();
     int screenHeight = ofGetWindowHeight();

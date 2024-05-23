@@ -19,15 +19,9 @@ def random_description():
     return random.choice(descriptions)
 
 def generate_xml_metadata(file_path):
-    file_type = "video" if file_path.endswith(".mp4") else "image"
-    file_name = os.path.basename(file_path)
-    meta_name = hashlib.md5(file_name.encode()).hexdigest()
     description = random_description()
 
     root = ET.Element("metadata")
-    ET.SubElement(root, "type").text = file_type
-    ET.SubElement(root, "filename").text = file_name
-    ET.SubElement(root, "meta_name").text = meta_name
     ET.SubElement(root, "description").text = description
 
     tree = ET.ElementTree(root)
@@ -39,4 +33,17 @@ video_files = glob.glob("bin/data/videos/*.mp4")
 
 for file_path in image_files + video_files:
     generate_xml_metadata(file_path)
-    print(f"Metadata XML for {file_path} generated.")
+
+
+def examples_xml(file_path):
+    file_name = os.path.basename(file_path)
+
+    root = ET.Element("metadata")
+    ET.SubElement(root, "description").text = os.path.splitext(file_name)[0].title()
+    
+    tree = ET.ElementTree(root)
+    xml_file_path = os.path.splitext(file_path)[0] + ".xml"
+    tree.write(xml_file_path)
+    
+for files in glob.glob("bin/data/examples/*.jpg") + glob.glob("bin/data/examples/*.png"):
+    examples_xml(files)
