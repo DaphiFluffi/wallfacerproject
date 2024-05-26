@@ -345,10 +345,10 @@ class searchGrid : public mediaGrid {
 
     ofxPanel panel;
     ofParameterGroup mode_settings;
-    vector<ofParameter<bool>> modes = vector<ofParameter<bool>>(2);
+    vector<ofParameter<bool>> modes = vector<ofParameter<bool>>(6);
 
     ofParameterGroup sim_functions;
-    vector<ofParameter<bool>> methods = vector<ofParameter<bool>>(3);
+    vector<ofParameter<bool>> methods = vector<ofParameter<bool>>(4);
 
 
     ofParameter<bool> start_search;
@@ -366,11 +366,16 @@ public:
         mode_settings.setName("Search By");
         mode_settings.add(modes[0].set("Brightness", true));
         mode_settings.add(modes[1].set("Color", false));
+        mode_settings.add(modes[2].set("Faces", false));
+        mode_settings.add(modes[3].set("Edge", false));
+        mode_settings.add(modes[4].set("Texture", false));
+        mode_settings.add(modes[5].set("Objects", false));
 
         sim_functions.setName("Method");
         sim_functions.add(methods[0].set("MAE", false));
         sim_functions.add(methods[1].set("MSE", false));
         sim_functions.add(methods[2].set("Cosine Sim", false));
+        sim_functions.add(methods[3].set("Set Intersect", false));
 
 
         panel.setup("Similarity Search Settings");

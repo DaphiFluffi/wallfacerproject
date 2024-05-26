@@ -29,7 +29,7 @@ public:
     template <typename MediaType>
     void updateMetadata(DataPoint<MediaType>& dataPoint);
 
-    Metadata compute_metatada(ofxCvColorImage& cvImage, std::string original_path);
+    Metadata compute_metatada(ofxCvColorImage& cvImage, std::string metadata_path);
 
 
 };

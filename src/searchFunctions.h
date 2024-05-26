@@ -19,6 +19,10 @@
 enum class searchModes {
     BRIGHTNESS,
     COLOR,
+    FACES,
+    EDGES,
+    Texture,
+    OBJECTS,
 };
 
 enum class distanceMetrics {
@@ -26,6 +30,7 @@ enum class distanceMetrics {
     MAE,
     MSE,
     COS_SIMILARITY,
+    SET_OVERLAP,
 };
 
 bool invalidMetricCombination(searchModes mode, distanceMetrics metric);
@@ -49,7 +54,7 @@ float mse(const std::tuple<const std::vector<float>&, const std::vector<float>&,
 float cos_similarity(const std::tuple<const std::vector<float>&, const std::vector<float>&, const std::vector<float>&>& a,
                      const std::tuple<const std::vector<float>&, const std::vector<float>&, const std::vector<float>&>& b);
 
-
+float set_interset(const std::vector<std::string>& a, const std::vector<std::string>& b) ;
 
 
 distanceMetrics get_default_metric(searchModes mode);

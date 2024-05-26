@@ -59,12 +59,41 @@ float cos_similarity(const std::tuple<const std::vector<float>&, const std::vect
     return (cos_similarity(std::get<0>(a), std::get<0>(b)) + cos_similarity(std::get<1>(a), std::get<1>(b)) + cos_similarity(std::get<2>(a), std::get<2>(b))) / 3;
 }
 
+
+float set_interset(const std::vector<std::string> &a, const std::vector<std::string> &b) {
+
+    float v = 0;
+
+    for (const auto& v1: a) {
+        for (const auto& v2: b) {
+            if (v1 == v2) {
+                v += 1;
+            }
+        }
+    }
+    return v;
+}
+
+
 bool invalidMetricCombination(searchModes mode, distanceMetrics metric) {
 
-    if(metric == distanceMetrics::COS_SIMILARITY && mode != searchModes::COLOR) {
+    if (metric == distanceMetrics::SET_OVERLAP && mode != searchModes::OBJECTS)
         return true;
-    }
 
+    if (metric != distanceMetrics::SET_OVERLAP && mode == searchModes::OBJECTS)
+        return true;
+
+
+    if (metric == distanceMetrics::COS_SIMILARITY) {
+        switch (mode) {
+            case searchModes::BRIGHTNESS:
+            case searchModes::FACES:
+                return true;
+            default:
+                return false;
+        }
+
+    }
     return false;
 
 };
@@ -73,9 +102,14 @@ bool invalidMetricCombination(searchModes mode, distanceMetrics metric) {
 distanceMetrics get_default_metric(searchModes mode) {
     switch (mode) {
         case searchModes::BRIGHTNESS:
+        case searchModes::FACES:
             return distanceMetrics::MAE;
         case searchModes::COLOR:
+        case searchModes::EDGES:
+        case searchModes::Texture:
             return distanceMetrics::COS_SIMILARITY;
+        case searchModes::OBJECTS:
+            return distanceMetrics::SET_OVERLAP;
         default:
             throw std::logic_error("mode not implemented");
     }
@@ -111,6 +145,27 @@ float score_func(searchModes mode, distanceMetrics metric, const Metadata& am, c
                 return apply_metric(metric, a_tup, b_tup);
             }
         }
+        case searchModes::FACES: {
+            if (am.n_faces && bm.n_faces) {
+                return apply_metric(metric, am.n_faces, bm.n_faces);
+            }
+        }
+        case searchModes::EDGES: {
+            if (am.edgeHist && bm.edgeHist) {
+                return apply_metric(metric, am.edgeHist, bm.edgeHist);
+            }
+        }
+        case searchModes::Texture: {
+            if (am.textureHist && bm.textureHist) {
+                return apply_metric(metric, am.textureHist, bm.textureHist);
+            }
+        }
+        case searchModes::OBJECTS: {
+            if (am.objects && bm.objects) {
+                return set_interset(am.objects.value(), bm.objects.value());
+            }
+        }
+
         break;
         default:
             throw std::logic_error("Mode not implemented");

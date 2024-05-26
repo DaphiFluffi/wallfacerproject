@@ -81,7 +81,7 @@ public:
         }
 
         std::sort(results.begin(), results.end(), [metric](const SearchResult<ofImage>& a, const SearchResult<ofImage>& b) {
-                    return (metric == distanceMetrics::COS_SIMILARITY) ? (a.score > b.score) : (a.score < b.score);
+                    return (metric == distanceMetrics::COS_SIMILARITY || metric == distanceMetrics::SET_OVERLAP) ? (a.score > b.score) : (a.score < b.score);
                 });
 
 
@@ -123,7 +123,7 @@ public:
         }
 
         std::sort(results.begin(), results.end(), [metric](const SearchResult<ofVideoPlayer>& a, const SearchResult<ofVideoPlayer>& b) {
-            return (metric == distanceMetrics::COS_SIMILARITY) ? (a.score > b.score) : (a.score < b.score);
+            return (metric == distanceMetrics::COS_SIMILARITY || metric == distanceMetrics::SET_OVERLAP) ? (a.score > b.score) : (a.score < b.score);
         });
 
         if (max_samples > 0 && max_samples < results.size()) {

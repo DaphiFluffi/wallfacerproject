@@ -9,12 +9,12 @@ float calculateBrightness(const cv::Mat& crayMat) {
     return static_cast<float>(meanBrightness[0]);  
 }
 
-Metadata metadataGenerator::compute_metatada(ofxCvColorImage& cvImage, std::string original_path) {
+Metadata metadataGenerator::compute_metatada(ofxCvColorImage& cvImage, std::string metadata_path) {
 
     Metadata metadata;
 
-    if (original_path != "")
-        metadata.description = get_description(original_path);
+    if (metadata_path != "")
+        metadata.description = get_description(metadata_path);
 
     cvImage.resize(256, 256);
     IplImage* iplImg = cvImage.getCvImage();
@@ -37,7 +37,7 @@ Metadata metadataGenerator::compute_metatada(ofxCvColorImage& cvImage, std::stri
 
     metadata.edgeHist = edgeHistogramComputer.computeEdgeHistogram(grayMat);
     metadata.textureHist = textureHistogramComputer.computeTextureHistogram(grayMat);
-    metadata.objects = surf_computer.getObjects(colorMat);
+    metadata.objects = surf_computer.getObjects(colorMat, metadata_path);
 
     return metadata;
 };
