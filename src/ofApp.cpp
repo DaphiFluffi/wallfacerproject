@@ -47,10 +47,11 @@ void ofApp::setup()
     baseGrid.addItem(std::move(feed));
     
 
-    auto background_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayBg);
+    auto background_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(MotionDetector::getInstance().grayBg);
     baseGrid.addItem(std::move(background_feed));
 
-    auto diff_feed = std::make_unique<mediaFeed<ofxCvGrayscaleImage>>(cam_manager.grayDiff);
+
+    auto diff_feed = std::make_unique<mediaFeed<MotionDetector>>(motion_detector);
     baseGrid.addItem(std::move(diff_feed));
 
     // ------------- generate metadata -------------
@@ -87,7 +88,7 @@ void ofApp::keyPressed(int key)
 {
 
 
-    cam_manager.keyPressed(key);
+    MotionDetector::getInstance().keyPressed(key);
 
     state_manager.keyPressed(key);
 }

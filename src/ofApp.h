@@ -38,7 +38,7 @@ public:
 
 	cameraManager cam_manager = cameraManager(640, 480);
 	StateManager& state_manager = StateManager::getInstance(image_io_manager, cam_manager);
-
+	MotionDetector& motion_detector = MotionDetector::getInstance();
 
 	std::map<std::string, bool> cmdArgs;
 };

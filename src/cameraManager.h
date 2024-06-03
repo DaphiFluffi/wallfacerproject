@@ -4,6 +4,7 @@
 #include "ofxCvHaarFinder.h"
 #include "ofxOpenCv.h"
 #include "CV_Stuff.h"
+#include "MotionDetector.h"
 
 class cameraManager
 {
@@ -17,17 +18,7 @@ class cameraManager
     vector<ofRectangle> faces;
 
 
-    ofxCvColorImage		colorImg;
-    ofxCvGrayscaleImage grayImage;
-    ofxCvContourFinder 	contourFinder;
-
-    ofPixels pixels;
-
 public:
-    ofxCvGrayscaleImage grayBg;
-    ofxCvGrayscaleImage grayDiff;
-
-
     cameraManager(int width, int height, int det_every_n = 10, int threshold = 80) 
         : camWidth(width), camHeight(height), steps(0), 
         detect_every_n(det_every_n), thresh(threshold) {
@@ -35,6 +26,7 @@ public:
 
     void setup()
     {
+
 
         // get back a list of devices.
         vector<ofVideoDevice> devices = vidGrabber.listDevices();
@@ -57,22 +49,11 @@ public:
         vidGrabber.setDesiredFrameRate(30);
         vidGrabber.setup(camWidth, camHeight);
         ofSetVerticalSync(true);
-
-
-        colorImg.allocate(camWidth, camHeight);
-        grayImage.allocate(camWidth, camHeight);
-        grayBg.allocate(camWidth, camHeight);
-        grayDiff.allocate(camWidth, camHeight);
-
-        colorImg.setFromPixels(vidGrabber.getPixels());
         vidGrabber.update();
-        grayImage = colorImg;
-        grayBg = grayImage;
+
+        MotionDetector::getInstance().setup(camWidth, camHeight, vidGrabber.getPixels());
     };
 
-    ofxCvColorImage get_frame() {
-        return colorImg;
-    }
 
 
     void update(){
@@ -83,18 +64,9 @@ public:
 
             faces = FaceFinder::getInstance().detect_faces(pixels);
         };
-        
-        colorImg.setFromPixels(pixels);
-        
-        grayImage = colorImg;
-        grayDiff.absDiff(grayBg, grayImage);
-        grayDiff.threshold(80);
-        
-        
+
+        MotionDetector::getInstance().update(vidGrabber.getPixels());
         steps++;
-
-
-
     };
 
     void draw(float x, float y, float w, float h){
@@ -118,13 +90,14 @@ public:
 
     };
 
+    ofxCvColorImage get_frame() {
+        ofxCvColorImage colorImg;
+        colorImg.ofxCvImage::setFromPixels(vidGrabber.getPixels());
+        return colorImg;
+    }
+
 
     void keyPressed(int key){
-
-        if(key == ' '){
-            grayBg = grayImage;
-            std::cout << "Updated Background\n";
-        };
-
+        std::cerr << "keypressed in cam manager depreated" << endl;
     };
 };
