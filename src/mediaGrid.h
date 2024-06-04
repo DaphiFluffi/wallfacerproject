@@ -16,7 +16,7 @@
 class mediaGrid {
 public:
     std::vector<std::vector<std::unique_ptr<mediaItem> > > grid;
-    std::vector<std::unique_ptr<mediaItem> > buffer;
+    std::deque<std::unique_ptr<mediaItem> > buffer;
 
 
     int n_items_x, n_items_y, buffer_between, item_size;
@@ -63,5 +63,7 @@ public:
 
     ofRectangle get_bounding_box();
     bool inside(float x, float y);
+
+    void fillFromBuffer();
 
 };

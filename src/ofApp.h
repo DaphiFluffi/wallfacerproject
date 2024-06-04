@@ -30,6 +30,8 @@ public:
 	void windowResized(int w, int h);
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
+	void doAction(ControlActions action);
+
 
 	ioManager<ofImage> image_io_manager = ioManager<ofImage>("images", { "jpg", "png" });
 	ioManager<ofVideoPlayer> video_io_manager = ioManager<ofVideoPlayer>("videos", { "mp4",});

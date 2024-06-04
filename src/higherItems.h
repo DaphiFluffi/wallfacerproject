@@ -227,18 +227,20 @@ public:
 class mediaImage : public labeledItem
 {
     ofImage item;
-    DataPoint<ofImage>* dataptr;
+
+    DataPoint<ofImage> datapoint;
 
 public:
 
 
 
-    explicit mediaImage(DataPoint<ofImage>* ptr, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::IMAGE, label, init, frozen), dataptr(ptr){
+    explicit mediaImage(DataPoint<ofImage>* ptr, std::string label = "", std::string init = "", bool frozen = false) : labeledItem(MediaType::IMAGE, label, init, frozen){
 
-        item = *dataptr->getData();
+        item = *ptr->getData();
+        datapoint = *ptr;
 
         if (!item.isAllocated()) {
-            std::cerr << "could not load image " << dataptr->filePath << std::endl;
+            std::cerr << "could not load image " << ptr->filePath << std::endl;
         }
     };
 
@@ -272,15 +274,15 @@ public:
     void drawMetadata(const float x,const  float y,const  float w,const  float h) override {
         if (item.isAllocated())
 
-        dataptr->metadata.draw(x, y, w, h);
+        datapoint.metadata.draw(x, y, w, h);
     };
 
     const Metadata* getMetaData() {
-        return &(dataptr->metadata);
+        return &(datapoint.metadata);
     }
 
     std::string getId() {
-        return dataptr->filePath;
+        return datapoint.filePath;
     }
 };
 

@@ -125,22 +125,6 @@ void DraggingState::mouseReleased(int x, int y, int button){
     
 }
 
-bool StateManager::keyPressed(int key) {
-    switch (key) {
-        case 'u':
-            std::cout << "Moving out of Window" << std::endl;
-            popWindow();
-            return true;
-        case 'p':
-            std::cout << "Saving Image" << std::endl;
-            addCamFrame();
-            return true;
-
-        default:
-            return false;
-    }
-}
-
 
 
 unique_ptr<State> DraggingState::move_to_new_state(){

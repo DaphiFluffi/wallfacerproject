@@ -96,6 +96,7 @@ void mediaGrid::addItem(std::unique_ptr<mediaItem> item) {
 
     } else {
         std::cout << "grif full moving to buffer" << std::endl;
+        buffer.push_back(std::move(item));
     }
 
 
@@ -194,14 +195,14 @@ void mediaGrid::update() {
 }
 
 int mediaGrid::size() {
-    int i = 0;
+    int count = 0;
     for (int i = 0; i < n_items_x; i++) {
         for (int j = 0; j < n_items_y; j++) {
-            if (grid[i][j] && !grid[i][j]->is_empty()) ++i;
+            if (grid[i][j] && !grid[i][j]->is_empty()) ++count;
         }
     }
 
-    return i;
+    return count;
 }
 
 void mediaGrid::clear() {
@@ -234,6 +235,18 @@ void mediaGrid::adjustToCenteredSquare(float buffer_percentage) {
         }
     }
 }
+
+void mediaGrid::fillFromBuffer() {
+
+    cout << "filling from buffer " << buffer.size()  << " " << size()  << " " << n_items_x * n_items_y<< endl;
+
+    while (buffer.size() && size() != n_items_x * n_items_y) {
+        addItem(std::move(buffer.front()));
+        buffer.pop_front();
+    }
+}
+
+
 
 ofRectangle mediaGrid::get_bounding_box() {
     return ofRectangle(x_start, y_start, width, height);

@@ -70,8 +70,13 @@ void ofApp::setup()
 //--------------------------------------------------------------
 void ofApp::update()
 {
-    cam_manager.update();
     state_manager.update();
+    auto opt_act = cam_manager.update();
+    if (opt_act.has_value())
+    {
+       doAction(opt_act.value());
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -83,6 +88,25 @@ void ofApp::draw()
     state_manager.draw();
 }
 
+void ofApp::doAction(ControlActions action) {
+    switch (action) {
+        case ControlActions::MOVING_UP:
+            std::cout << "Moving out of Window" << std::endl;
+            state_manager.popWindow();
+            break;
+        case ControlActions::PICK:
+            std::cout << "Saving Image" << std::endl;
+            state_manager.addCamFrame();
+            break;
+        case ControlActions::FILL:
+            std::cout << "FILLING GRID" << std::endl;
+            state_manager.fillFromBuffer();
+            break;
+    }
+}
+
+
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key)
 {
@@ -90,7 +114,17 @@ void ofApp::keyPressed(int key)
 
     MotionDetector::getInstance().keyPressed(key);
 
-    state_manager.keyPressed(key);
+    switch (key) {
+        case 'u':
+            doAction(ControlActions::MOVING_UP);
+            break;
+        case 'p':
+            doAction(ControlActions::PICK);
+            break;
+        case 'f':
+            doAction(ControlActions::FILL);
+            break;
+    }
 }
 
 //--------------------------------------------------------------

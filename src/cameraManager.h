@@ -56,7 +56,7 @@ public:
 
 
 
-    void update(){
+     std::optional<ControlActions> update(){
         vidGrabber.update();
         ofPixels pixels = vidGrabber.getPixels();
 
@@ -65,8 +65,9 @@ public:
             faces = FaceFinder::getInstance().detect_faces(pixels);
         };
 
-        MotionDetector::getInstance().update(vidGrabber.getPixels());
         steps++;
+
+        return MotionDetector::getInstance().update(vidGrabber.getPixels());
     };
 
     void draw(float x, float y, float w, float h){

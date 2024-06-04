@@ -260,10 +260,10 @@ class FullScreenMode : public ButtonManagerState
 
 private:
     mediaItem *item = nullptr;
-    bool back_to_browsing = false;
 
 
 public:
+    bool back_to_browsing = false;
     FullScreenMode(mediaItem *pointer, mediaGrid *gr) : ButtonManagerState(gr),item(pointer)
     {
         name = StateNames::FULL_SCREEN;
@@ -593,6 +593,14 @@ public:
     };
 
     void popWindow() {
+
+        if (state->getName() == StateNames::FULL_SCREEN) {
+            auto fullscreen_ptr = dynamic_cast<FullScreenMode*>(state.get());
+            fullscreen_ptr->back_to_browsing = true;
+            return;
+        }
+
+
         if (windows.size() == 1) {
             std::cerr << "Cannot pop the last window" << std::endl;
             return;
@@ -601,6 +609,10 @@ public:
         windows.back()->getDefaultState()->update();
         windows.pop_back();
         setToBack();
+    };
+
+    void fillFromBuffer() {
+        current_grid->fillFromBuffer();
     };
 
     void setToBack() {
@@ -616,7 +628,6 @@ public:
         state->mousePressed(x, y, button);
     }
 
-    bool keyPressed(int key);
 
     void addToGridAbove(std::unique_ptr<mediaItem> item) {
 
