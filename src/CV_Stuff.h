@@ -43,6 +43,13 @@ struct ExampleObject {
     cv::Mat descriptors;
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat image;
+
+    // Constructor to initialize all member variables
+    ExampleObject(const std::string& name,
+        const cv::Mat& descriptors,
+        const std::vector<cv::KeyPoint>& keypoints,
+        const cv::Mat& image)
+        : name(name), descriptors(descriptors), keypoints(keypoints), image(image) {}
 };
 
 
@@ -85,7 +92,12 @@ public:
 
             detector->detectAndCompute(resizedColorMat, cv::noArray(), keypoints, descriptors);
 
-            example_objects.push_back(std::make_unique<ExampleObject>(point.metadata.description.value(), descriptors, keypoints, resizedColorMat));
+            example_objects.push_back(
+                std::make_unique<ExampleObject>(point.metadata.description.value(),
+                    descriptors,
+                    keypoints,
+                    resizedColorMat)
+            );
         }
 
 
